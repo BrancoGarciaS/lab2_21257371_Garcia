@@ -38,3 +38,13 @@ pixrgb-d(X, Y, Red, Green, Blue, Profundidad, [X,Y,Red,Green,Blue,Profundidad]):
     Blue >= 0,
     Blue =< 255,
     integer(Profundidad).
+
+image(Ancho, Alto, [P|C], [Ancho, Alto, [P|C]]):-
+    integer(Ancho),
+    integer(Alto).
+
+imageIsBitmap(I):-
+    image(_,_,[Pix1|_], I),
+    pixbit-d(_,_,_,_,Pix1).
+
+
