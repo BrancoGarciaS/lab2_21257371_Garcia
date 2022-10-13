@@ -43,8 +43,18 @@ image(Ancho, Alto, [P|C], [Ancho, Alto, [P|C]]):-
     integer(Ancho),
     integer(Alto).
 
+%GetPix1(_,_,Pixel, Pix1):-
+getPixeles(I, Pixeles):-
+    image(_,_,Pixeles,I).
+
 imageIsBitmap(I):-
     image(_,_,[Pix1|_], I),
     pixbit-d(_,_,_,_,Pix1).
 
+imageIsPixmap(I):-
+    image(_,_,[Pix1|_], I),
+    pixrgb-d(_,_,_,_,_,_,Pix1).
 
+imageIsHexmap(I):-
+    image(_,_,[Pix1|_],I),
+    pixhex-d(_,_,_,_,Pix1).
