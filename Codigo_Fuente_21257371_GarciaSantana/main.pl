@@ -65,22 +65,75 @@ getY(P,N):-
     pixhex-d(_,N,_,_,P);
     pixrgb-d(_,N,_,_,_,_,P).
 
+getColor([_,_,C,_],C).
+
 getD(P,D):-
    pixbit-d(_,_,_,D,P);
    pixhex-d(_,_,_,D,P);
    pixrgb-d(_,_,_,D,P).
 
-getColor(P,C):-
-    pixbit-d(_,_,C,_,P);
-    pixhex-d(_,_,C,_,P);
-    pixrgb-d(_,_,C,_,P).
+% -------------------------------------------------------------------- %
+% Otros Operadores de pixel:
+
+% Clausulas para ordenar pixeles o conservar el orden de esto (dependiendo
+% si están ordenados o no en x e y)
+% Caso donde los pixeles ingresados son de una imagen comprimida de la
+% estructura: [-1,<pixeles comprimidos>, <pixeles no comprimidos>], en
+% dicho caso los pixeles no se alteran
+ordenarPixs([-1,Comp,NoComp],_,[-1,Comp,NoComp]).
+ordenarPixs(Pixeles,A,Pixeles):-
+    % si los pixeles están ordenados no se modifican
+    pixs_estan_ordenados(Pixeles,0,A).
+ordenarPixs(Pixeles,A,Pixeles_Ordenados):-
+    % si los pixeles no están ordenados se mueven para
+    % ordenarlos
+    not(pixs_estan_ordenados(Pixeles,0,A)),
+    moverPixs(Pixeles,0,A,Pixeles_Ordenados).
+
+% Clausulas para ver si los pixeles están ordenados o no
+pixs_estan_ordenados([Pix1|RestPixs],Pos_Correspondiente,A):-
+    % Pos_correspondiente se ingresa como 0 y se va a ir incrementando en 1
+    % La posición correspondiente (según el orden establecido) de un pixel
+    % viene dado por: ancho * x + y, en la lista de pixeles
+    getX(Pix1,X), getY(Pix1,Y),
+    Pos_Pixel is A * X + Y,
+    % Si no se cumple la igualdad, se retorna false
+    Pos_Pixel = Pos_Correspondiente,
+    % Si se cumple se sigue incrementando el contador de posición
+    % hasta recorrer todos los pixeles comprobando que están ordenados
+    % o hasta encontrar un pixel desordenado que no cumpla la igualdad
+    Pos_sgte is Pos_Correspondiente + 1,
+    pixs_estan_ordenados(RestPixs,Pos_sgte,A).
+pixs_estan_ordenados([],_,_). % Caso base: comprobar que todos los pixeles están en orden
+
+% Clausulas para obtener un pixel por posición
+getPixPorPosicion([Pix1|RestPixs],Pos_buscada,A,Pix_buscado,[Pix1|PixsNoBusc]):-
+    getX(Pix1,X), getY(Pix1,Y),
+    Pos_Pixel is A * X + Y,
+    Pos_Pixel =\= Pos_buscada,
+    getPixPorPosicion(RestPixs,Pos_buscada,A,Pix_buscado,PixsNoBusc).
+getPixPorPosicion([Pix_buscado|RestPixs],Pos_buscada,A,Pix_buscado,RestPixs):-
+    getX(Pix_buscado,X), getY(Pix_buscado,Y),
+    Pos_Pixel is A * X + Y,
+    Pos_Pixel = Pos_buscada.
+
+moverPixs(Pixeles,Posicion,A,[PixOrdenado|RestPixsOrd]):-
+    getPixPorPosicion(Pixeles,Posicion,A,PixOrdenado,RestPixs),
+    SgtePos is Posicion + 1,
+    moverPixs(RestPixs,SgtePos,A,RestPixsOrd).
+moverPixs([],_,_,[]).
 
 % -------------------------------------------------------------------- %
 
 % Requerimiento 2:
-image(Ancho, Alto, [Pixel1|Resto], [Ancho, Alto, [Pixel1|Resto]]):-
+%
+image(Ancho, Alto, Pixeles, [Ancho,Alto,Pixs]):-
     integer(Ancho),
-    integer(Alto).
+    integer(Alto),
+    % se ordenan en caso de ingresar pixeles desordenados en X e Y
+    % en caso que la imagen no esté comprimida.
+    % Si la imagen está comprimida, sus pixeles no se alteran
+    ordenarPixs(Pixeles,Ancho,Pixs).
 
 % Requerimiento 3:
 
@@ -266,10 +319,96 @@ recortarpixs([Pix1|Rest],X1,X2,Y1,Y2,X0,Y0,Rest2):-
 
 % ------------------------------------------------------------------------------ %
 
+% ------------------------------------------------------------------------------ %
+imageRGBToHex(I1, I2):-
+    getAncho(I1,A),
+    getLargo(I1,L),
+    getPixeles(I1,Pixeles),
+    pixsToHex(Pixeles,PixsHex),
+    image(A,L,PixsHex,I2).
 
+% Clausulas para convertir numeros decimales a hexadecimales
+hexa(X, XtoStr):- % REGLA
+    % si es menor a 10, se convierte a string
+    X < 10,
+    number_string(X,XtoStr).
+% HECHOS:
+hexa(10,"A").
+hexa(11,"B").
+hexa(12,"C").
+hexa(13,"D").
+hexa(14,"E").
+hexa(15,"F").
 
+% Clausula para convertir el valor de un canal a hexadecimal
+% String de salida -> "<resultado><resto>"
+canal_a_hex(Canal,Hexadecimal):-
+    H1 is Canal // 16,
+    H2 is Canal mod 16,
+    hexa(H1,Hexa1),
+    hexa(H2,Hexa2),
+    string_concat(Hexa1,Hexa2,Hexadecimal).
 
+% Clausula para convertir un pixel a hexadecimal
+conv_a_hex([X,Y,[R,G,B],D],Pix_hexa):-
+    canal_a_hex(R,R_hex),
+    canal_a_hex(G,G_hex),
+    canal_a_hex(B,B_hex),
+    string_concat("#",R_hex,Parte1),
+    string_concat(G_hex,B_hex,Parte2),
+    string_concat(Parte1,Parte2,Str_hexa),
+    pixhex-d(X,Y,Str_hexa,D,Pix_hexa).
 
+% Clausulas para convertir a Hexadecimal todos los pixeles RGB:
+pixsToHex([],[]). % HECHO - caso base: si se recorren todos los pixeles,
+% convertiendose la lista de salida queda vacía
+pixsToHex([Pix1|Rest], [PixsHex|RestHex]):-
+    % REGLA - para convertir a hexadecimal una lista de pixeles.
+    % Se convierte a hexadecimal el pixel cabecera 'guardandose'
+    % en la cabeza de la lista de pixeles hexadecimales
+    conv_a_hex(Pix1, PixsHex),
+    % se vuelve a realizar el mismo procedimiento con el resto
+    % de pixeles, hasta llegar al hecho caso base.
+    pixsToHex(Rest, RestHex).
+
+% ------------------------------------------------------------------------------ %
+
+imageToHistogram(I,Histograma):-
+    getPixeles(I,Pixeles),
+    contarcolores(Pixeles,Histograma).
+
+% Clausulas para contar un color especifico en la lista de pixeles
+% Dominio: Pixel X Color X Repeticion X Pixeles restantes (de otro color)
+mismocolor([],_,0,[]). % HECHO - caso base: la repeticion inicia en 0
+mismocolor([[_,_,Color,_]|Rest],Color,Repeticion, Rest2):- !,
+    % Caso donde el pixel analizado coincide con el color a contar.
+    % A traves de recursion natural, se deja un estado en espera, el cual
+    % es el valor de Repeticion1 que almacenará las Repeticiones, llegando
+    % al caso base que es cuando vale 0 (de ahí se devuelve e irá sumando)
+    mismocolor(Rest,Color,Repeticion1,Rest2),
+    Repeticion is Repeticion1 + 1.
+mismocolor([Pix1|Rest],Color,Repeticion,[Pix1|Rest2]):-
+    % Caso donde el color del pixel no coincida con el color buscado.
+    % No se altera la cantidad de Repeticiones
+    mismocolor(Rest,Color,Repeticion,Rest2).
+
+% Clausulas para contar todos los colores de la lista de pixeles y
+% almacenarlos en una lista
+contarcolores([],[]). % HECHO - caso base: contar los colores de
+% todos los pixeles y almacenar las cuentas en una lista
+contarcolores([Pix1|Rest],[[Color,Repeticion]|Cola]):-
+    % Se toma en cuenta el color del pixel cabecera almacenando
+    % esa información en la lista (salida) de conteo de colores
+    getColor(Pix1,Color),
+    % Se cuenta el color especifico del pixel cabecera
+    % Desde la llamada se obtiene Repeticion el cual es un dato
+    % que tambien se deja en la lista de conteo de colores
+    mismocolor([Pix1|Rest],Color,Repeticion,PixsRest),
+    % Se vuelve a realizar la llamada recursiva, pero con los
+    % pixeles restantes que no tienen el color contado
+    contarcolores(PixsRest,Cola).
+
+% ------------------------------------------------------------------------------ %
 
 
 
