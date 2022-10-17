@@ -410,6 +410,96 @@ contarcolores([Pix1|Rest],[[Color,Repeticion]|Cola]):-
 
 % ------------------------------------------------------------------------------ %
 
+% ------------------------------------------------------------------------------ %
+/*
+Dominio:
+I1: imagen a operar
+I2: imagen volteada verticalmente
+
+Predicados:
+imageRotate90(I1,I2).
+rotXY([X,Y,C,D], Largo, [X,Yrot,C,D]). Yrot: Y rotado 90 grados a la derecha
+rot90(P,L,Pixs_Rot). P: pixs, L: largo, Pixs_V: pixs rotados 90° a la derecha
+
+Metas: Principales: imageRotate90
+*/
+imageRotate90(I1,I2):-
+    getAncho(I1,A),
+    getLargo(I1,L),
+    getPixeles(I1,P),
+    rot90(P,L,Pixs_Rot),
+    % Al rotar 90 grados las dimensiones de la imagen
+    % se invierten (Ancho y Alto)
+    image(L,A,Pixs_Rot,I2).
+
+% Clausula para rotar 90° a la derecha un pixel
+rotXY([X,Y,C,D], Largo, [Y,Yrot,C,D]):-
+    % (x_original, y _original) -> (y_original, largo - 1 - x_original)
+    Yrot is Largo - 1 - X.
+
+% Clausulas para rotar 90° todos los pixeles de una lista
+rot90([],_,[]). % HECHO - caso base: cuando se recorren todos los pixeles
+% rotandose cada uno 90 grados.
+rot90([Pix1|Rest], Largo, [Pix1_2|Rest2]):-
+    % Se rota el pixel cabecera y se incluye en la lista de pixeles rotados
+    rotXY(Pix1, Largo, Pix1_2),
+    % Se realiza el mismo procedimiento con el resto de pixeles
+    rot90(Rest, Largo, Rest2).
+
+% ------------------------------------------------------------------------------ %
+/*
+Dominio:
+I1: imagen a operar
+I2: imagen comprimida
+
+Predicados:
+imageCompress(I1,I2).
+maxcolor(Histograma,Max_ref,C_maxRef,A).
+	Rep: repeticiones del color, Max_Ref: cantidad maxima de referencia
+    C_maxRef: color más repetido de referencia, A: color más repetido
+comprimir(Pixeles,ColorMasRep,PosInicial,Conservados,PosComprimidos,Comprimidos).
+	PosInicial: inicia en 0, Conservados: pixeles conservados,
+    PosComprimidos: posiciones de los pixeles a comprimir,
+    Comprimidos: pixeles comprimidos.
+
+Metas: Principales: imageCompress
+*/
+imageCompress(I,I2):-
+    imageToHistogram(I, Histograma),
+    % Hallo el color más repetido del histograma
+    % coloco un -1 como referencia de conteo, ya que los colores no pueden
+    % tener una cantidad de repetición negativa y un color C de referencia
+    maxcolor(Histograma,-1,_,ColorMasRep),
+    % Realizo el proceso de compresión con dicho color más repetido y los
+    % pixeles de la imagen
+    getPixeles(I,Pixeles),
+    comprimir(Pixeles,ColorMasRep,0,Conservados,PosComprimidos,Comprimidos),
+    % con la informacion obtenida se construye la imagen comprimida
+    % con los pixeles como una lista de la forma:
+    % [-1, [<posiciones comprimidos>,<pixeles comprimidos>], <pixeles conservados>]
+    % donde -1 servirá como identificador que la imagen está comprimida
+    getAncho(I,A),
+    getLargo(I,L),
+    image(A,L,[-1,[PosComprimidos,Comprimidos],Conservados],I2).
+
+% Clausulas para encontrar el color más repetido del histograma
+maxcolor([],_,A,A).
+maxcolor([[Color,Rep]|Cola], Max_ref,_,A):-
+    Max_ref =< Rep,
+    maxcolor(Cola, Rep, Color,A).
+maxcolor([[_,Rep]|Cola],Max_ref,C_maxRef,A):-
+    Max_ref > Rep,
+    maxcolor(Cola,Max_ref,C_maxRef,A).
+
+% Clausulas para separar pixeles comprimidos (con sus posiciones) y conservados
+comprimir([],_,_,[],[],[]).
+comprimir([[X,Y,C,D]|RestPixs], C, Pos, Conserv, [Pos|RestPos],[[X,Y,C,D]|RestComp]):-
+    PosSgte is Pos + 1,
+    comprimir(RestPixs, C, PosSgte, Conserv, RestPos, RestComp).
+comprimir([Pix1|RestPixs],C,Pos,[Pix1|RestConserv],PosComp,Comprimidos):-
+    PosSgte is Pos + 1,
+    comprimir(RestPixs,C,PosSgte,RestConserv,PosComp,Comprimidos).
+% ------------------------------------------------------------------------------ %
 
 
 
