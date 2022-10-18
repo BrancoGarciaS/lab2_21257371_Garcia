@@ -500,6 +500,138 @@ comprimir([Pix1|RestPixs],C,Pos,[Pix1|RestConserv],PosComp,Comprimidos):-
     PosSgte is Pos + 1,
     comprimir(RestPixs,C,PosSgte,RestConserv,PosComp,Comprimidos).
 % ------------------------------------------------------------------------------ %
+/*
+Dominio:
+I1: imagen a operar
+NewPixel: pixel a cambiar
+I2: imagen con el pixel cambiado
+
+Predicados:
+imageChangePixel(I,NewPixel,I2).
+reemplazarPix(Pixeles, NewPixel, NewPixels).
+	NewPixels: pixeles con el pixel nuevo incluido
+
+Metas: Principales: imageChangePixel
+*/
+imageChangePixel(I,NewPixel,I2):-
+    getAncho(I,A),
+    getLargo(I,L),
+    getPixeles(I,Pixeles),
+    reemplazarPix(Pixeles, NewPixel, NewPixels),
+    image(A,L,NewPixels, I2).
+
+% Clausulas para reemplazar el pixel nuevo en la lista de pixeles
+% Dominio: pixeles originales X pixel nuevo X pixeles modificados
+reemplazarPix([],_,[]). % Hecho - Caso base: que la lista de pixeles
+% se recorren completamente
+% Caso donde el pixel a cambiar cooincide con las coordenadas X Y (atributo
+% único de un pixel) con el pixel a reemplazar
+reemplazarPix([[X,Y,_,_]|RestPixs], [X,Y,C,D] , [[X,Y,C,D]|RestPixsNew]):-
+    reemplazarPix(RestPixs, [X,Y,C,D], RestPixsNew).
+% Caso donde el pixel a cambiar no cooincide con las coordenadas del pixel
+% a reemplazar, se colocan los pixeles originales
+reemplazarPix([Pix1|RestPixs], NewPix , [Pix1|RestPixsNew]):-
+    reemplazarPix(RestPixs, NewPix, RestPixsNew).
+% ------------------------------------------------------------------------------ %
+/*
+Dominio:
+Pixel: pixrgb-d a operar
+Pix_inv: pixrgb-d con sus canales RGB volteados
+
+Predicados:
+invertColorRGB(Pixel,Pix_inv)
+
+Metas: Principales: invertColorRGB
+*/
+invertColorRGB(Pixel,Pix_inv):-
+    % Obtengo la información del pixel original
+    getX(Pixel,X),
+    getY(Pixel,Y),
+    getColor(Pixel,[R,G,B]),
+    getD(Pixel,D),
+    % Para invertir cada canal resto 255 con cada valor
+    R_inv is 255 - R,
+    G_inv is 255 - G,
+    B_inv is 255 - B,
+    % Construyo el nuevo pixel con los canales invertidos
+    pixrgb-d(X,Y,R_inv,G_inv,B_inv,D,Pix_inv).
+% ------------------------------------------------------------------------------ %
+/*
+Dominio:
+I: imagen a operar
+Str: string representativo de los colores de la imagen
+
+Predicados:
+imageToString(I,Str)
+a_string(Pixeles,LimY,StrIni,Sout)
+	- LimY: limite en y para hacer salto de línea al alcanzarlo con un pixel
+    - StrIni: string donde se irá guardando la conversión de todos los colores
+    a string y los saltos de linea; inicia en ''
+    - Sout: Argumento para dejar el string de salida
+colorString(Color,ColorStr) -> convierte el color de un pixel a string
+
+Metas: Principales: imageToString
+*/
+imageToString(I,Str):-
+    % Obtengo la información de la imagen
+    getAncho(I,A),
+    getPixeles(I,Pixeles),
+    % Defino el límite en Y para decidir cuando colocar
+    % salto de linea en el string
+    LimY is A - 1,
+    a_string(Pixeles,LimY,"",Str).
+
+% Clausulas para pasar a formato string cada pixel de la lista
+% de pixeles (para hacerlo se debe tener en cuenta los límites en Y
+% de la imagen para saber cuando hacer salto de linea)
+a_string([],_,S,S). % HECHO - Caso base: si se convirtió en string cada
+% color de todos los pixeles, se "copia" el string trabajado e iniciado en ''
+% en el string de salida
+a_string([[_,LimY,C,_]|RestPixs], LimY, StrIni, Sout):-
+    % Caso donde el pixel posee de coordenada Y el mismo valor
+    % que el limite de la imagen en Y, en dicho caso se debe
+    % convertir a string el color, concatenarlo con el string inicial
+    % y unir todo a un salto de línea
+    colorString(C,StringC),
+    string_concat(StrIni,StringC,StrColors),
+    string_concat(StrColors,'\n', StrSgte),
+    % Se vuelve a repetir el proceso con el resto de pixeles,
+    % actualizando el string inicial
+    a_string(RestPixs,LimY, StrSgte,Sout).
+a_string([[_,_,C,_]|RestPixs],LimY, StrIni,Sout):-
+    % Caso donde el pixel no está en el límite Y, en dicho caso solo
+    % se realiza un espacio mediante '\t' luego de convertir a string
+    % el color y unirlo a la cadena de string inicial
+    colorString(C,StringC),
+    string_concat(StrIni,StringC,StrColors),
+    string_concat(StrColors, '\t', StrSgte),
+    % Se vuelve a repetir el proceso con el resto de pixeles,
+    % actualizando el string inicial
+    a_string(RestPixs,LimY, StrSgte,Sout).
+
+% Clausulas para convertir los colores de un pixel a string
+colorString(Color,Color):- % En caso de color hexadecimal de un pixhex-d
+    string(Color).
+colorString(Bit,Str):- % En caso del color bit de un pixbit-d
+    integer(Bit),
+    % La conversión a string del bit queda en "Str"
+    number_string(Bit,Str).
+colorString([R,G,B], Str):- % En caso de canales de color de un pixrgb-d
+    integer(R), integer(G), integer(B),
+    % Paso a string los 3 canales
+    number_string(R, Rstr),
+    number_string(G, Gstr),
+    number_string(B, Bstr),
+    % Uno cada canal con un espacio (para que en la representación
+    % estén distanciados entre si)
+    string_concat(Rstr," ", R_str),
+    string_concat(Gstr, " ", G_str),
+    string_concat(Bstr, " ", B_str),
+    % Uno el valor Red con Green en un string
+    string_concat(R_str,G_str,R_G_Str),
+    % Uno el valor RG con Blue en el string de argumento "Str" (salida)
+    string_concat(R_G_Str, B_str, Str).
+% ------------------------------------------------------------------------------ %
 
 
 
