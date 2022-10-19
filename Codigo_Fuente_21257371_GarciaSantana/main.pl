@@ -632,7 +632,72 @@ colorString([R,G,B], Str):- % En caso de canales de color de un pixrgb-d
     % Uno el valor RG con Blue en el string de argumento "Str" (salida)
     string_concat(R_G_Str, B_str, Str).
 % ------------------------------------------------------------------------------ %
+% ------------------------------------------------------------------------------ %
+imageDepthLayers(I,LI):-
+    getAncho(I,A), getLargo(I,L),
+    getPixeles(I,Pixeles),
+    separarD(Pixeles,Pixeles,LI,A,L).
 
+% Clausulas para construir imagenes a través de los pixeles, una copia de
+% estos, más el ancho y largo de la imagen, almacenandose la operación en
+% una lista de imagenesD
+separarD([],_,[],_,_).
+separarD([Pixel|_],PixelesCopia,[ImageD|RestImages],A,L):-
+    getD(Pixel,D),
+    mismaprof(PixelesCopia, D, PixelesD, PixsDRest,0),
+    image(A,L,PixelesD,ImageD),
+    separarD(PixsDRest,PixelesCopia,RestImages,A,L).
+
+% Clausulas para que con una profundidad se almacenen los pixeles
+% de igual profundidad (reemplazando con pixeles blanco a los no coincidentes),
+% además de guardar a los pixeles de diferente profundidad.
+% pixeles originales X prof a buscar X Pixeles mismo D relleno blanco
+%                                    X Pixeles sobrantes
+% Defino variable marcadora para indicar cuando empiezo a agregar
+% los pixeles no coincidentes en profundidad a la lista de pixeles
+% sobrantes 0 cuando no se ha sobrepasado el primer pixel de los
+% sobrantes. Si se sobrepasa se vuelve 1 y se empiezan a considerar
+% el resto de sobrantes (en el caso que tengan diferente
+% profundidad. (Esto es para no considerar pixeles de profundidades
+% ya recorridas y colocarlos como sobrantes)
+mismaprof([],_,[],[],_). % HECHO - Caso base: cuando se recorrieron
+% todos los pixeles, recolectando los que tienen la misma profundidad
+% a la buscada y dejando los que no en pixeles sobrantes (de diferente D)
+mismaprof([[X,Y,C,D]|Rest],D,[[X,Y,C,D]|RestPixsD], PixsDifD,_):-
+    Marcador is 1,
+    % Caso cuando se encuentra por primera vez el pixel con dicha
+    % profundidad en los pixeles no recorridos.
+    % En caso de coincidir con la profundidad a buscar
+    % se agrega el pixel a la lista de pixeles de igual profundidad
+    mismaprof(Rest,D,RestPixsD,PixsDifD,Marcador).
+mismaprof([Pixel|Rest],D,[PixBlancoD|RestPixsD],[Pixel|RestPixsDifD],1):-
+    % En caso de que el pixel no coincida en la profundidad a buscar
+    % se agrega a la lista de restantes, y se agrega un pixel blanco
+    % a la lista de pixeles de igual profundidad
+    whitePixel(Pixel,D,PixBlancoD),
+    mismaprof(Rest,D,RestPixsD,RestPixsDifD,1).
+mismaprof([Pixel|Rest],D,[PixBlancoD|RestPixsD],RestPixsDifD,0):-
+    % en caso de que el pixel no coincida en la profundidad a buscar
+    % y aun no se ha encontrado un primer pixel con la
+    % profundidad buscada, no se agrega a la lista de restantes y
+    % se agrega un pixel blanco a los pixeles de igual profundidad
+    whitePixel(Pixel,D,PixBlancoD),
+    mismaprof(Rest,D,RestPixsD,RestPixsDifD,0).
+
+% Clausulas para cambiar la profundidad de un pixel y pasarlo a blanco
+whitePixel(Pixel,D,PixelBlanco):- % CASO pixbit-d
+    pixbit-d(_,_,_,_,Pixel),
+    getX(Pixel,X), getY(Pixel,Y),
+    pixbit-d(X,Y,1,D,PixelBlanco).
+whitePixel(Pixel,D,PixelBlanco):- % CASO pixhex-d
+    pixhex-d(_,_,_,_,Pixel),
+    getX(Pixel,X), getY(Pixel,Y),
+    pixhex-d(X,Y,'#FFFFFF',D,PixelBlanco).
+whitePixel(Pixel,D,PixelBlanco):- % CASO pixrgb-d
+    pixrgb-d(_,_,_,_,_,_,Pixel),
+    getX(Pixel,X), getY(Pixel,Y),
+    pixrgb-d(X,Y,255,255,255,D,PixelBlanco).
+% ------------------------------------------------------------------------------ %
 
 
 
