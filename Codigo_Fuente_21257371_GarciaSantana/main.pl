@@ -698,6 +698,32 @@ whitePixel(Pixel,D,PixelBlanco):- % CASO pixrgb-d
     getX(Pixel,X), getY(Pixel,Y),
     pixrgb-d(X,Y,255,255,255,D,PixelBlanco).
 % ------------------------------------------------------------------------------ %
+imageDecompress(I,I2):-
+    getPixeles(I,Pixeles),
+    getAncho(I,A),
+    getLargo(I,L),
+    recuperarPixs(Pixeles,0,PixelesDescomp),
+    image(A,L,PixelesDescomp,I2).
+
+% Contador I inicia en 0
+% HECHO - caso base: cuando ya se recorrieron todos los pixeles comprimidos,
+% conservados y las posiciones de la lista de posiciones
+recuperarPixs([_,[[],[]],[]],_,[]).
+% Caso donde contador I coincide con la primera posicion de comprimidos
+recuperarPixs([_,[[I|RestPos],[Comp1|RestComp]],Conserv], I,
+              [Comp1|RestRecuperados]):-
+    % En este caso se agrega el primer pixel comprimido a los recuperados
+    Isgte is I + 1,
+    recuperarPixs([_,[RestPos,RestComp],Conserv],Isgte,RestRecuperados).
+% Caso donde el contador no coincide con la posicion de comprimidos
+recuperarPixs([_,[Pos,Comprimidos],[Conserv1|RestConserv]], I,
+              [Conserv1|RestRecuperados]):-
+    % En este caso se agrega el primer pixel conservado a
+    % los pixeles recuperados
+    Isgte is I + 1,
+    recuperarPixs([_,[Pos,Comprimidos],RestConserv],Isgte,RestRecuperados).
+
+
 
 
 
