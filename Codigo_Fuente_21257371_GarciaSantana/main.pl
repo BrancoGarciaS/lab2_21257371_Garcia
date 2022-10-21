@@ -72,6 +72,16 @@ getD(P,D):-
    pixhex-d(_,_,_,D,P);
    pixrgb-d(_,_,_,D,P).
 
+setPixel(X,Y,C,D,PixelCamb):-
+    pixbit-d(X,Y,C,D,PixelCamb);
+    pixhex-d(X,Y,C,D,PixelCamb).
+
+setPixel(X,Y,[R,G,B],D,PixelCamb):-
+    pixrgb-d(X,Y,R,G,B,D,PixelCamb).
+
+pix1([Pix1|_],Pix1).
+rest_Pixs([_|Resto],Resto).
+
 % -------------------------------------------------------------------- %
 % Otros Operadores de pixel:
 
