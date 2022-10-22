@@ -13,20 +13,20 @@
 */
 % -------------------------------------------------------------------- %
 % Constructores de pixeles:
-pixbit-d(X, Y, Bit, Profundidad, [X,Y,Bit,Profundidad]):-
+pixbit(X, Y, Bit, Profundidad, [X,Y,Bit,Profundidad]):-
     integer(X),
     integer(Y),
     integer(Bit),
     Bit = 1; Bit = 0,
     integer(Profundidad).
 
-pixhex-d(X, Y, Color, Profundidad, [X,Y,Color,Profundidad]):-
+pixhex(X, Y, Color, Profundidad, [X,Y,Color,Profundidad]):-
     integer(X),
     integer(Y),
     string(Color),
     integer(Profundidad).
 
-pixrgb-d(X, Y, Red, Green, Blue, Profundidad, [X,Y,Red,Green,Blue,Profundidad]):-
+pixrgb(X, Y, Red, Green, Blue, Profundidad, [X,Y,[Red,Green,Blue],Profundidad]):-
     integer(X),
     integer(Y),
     integer(Red),
@@ -39,7 +39,6 @@ pixrgb-d(X, Y, Red, Green, Blue, Profundidad, [X,Y,Red,Green,Blue,Profundidad]):
     Blue >= 0,
     Blue =< 255,
     integer(Profundidad).
-
 % -------------------------------------------------------------------- %
 % Selectores de imagen:
 
@@ -53,37 +52,35 @@ getLargo(I, Largo):-
     image(_,Largo,_,I).
 
 % -------------------------------------------------------------------- %
+
 % Selectores de pixel:
 
-getX(P,N):-
-    pixbit-d(N,_,_,_,P);
-    pixhex-d(N,_,_,_,P);
-    pixrgb-d(N,_,_,_,_,_,P).
+getX(P,X):-
+    pixbit(X,_,_,_,P);
+    pixhex(X,_,_,_,P);
+    pixrgb(X,_,_,_,_,_,P).
 
-getY(P,N):-
-    pixbit-d(_,N,_,_,P);
-    pixhex-d(_,N,_,_,P);
-    pixrgb-d(_,N,_,_,_,_,P).
+getY(P,Y):-
+    pixbit(_,Y,_,_,P);
+    pixhex(_,Y,_,_,P);
+    pixrgb(_,Y,_,_,_,_,P).
 
 getColor([_,_,C,_],C).
 
 getD(P,D):-
-   pixbit-d(_,_,_,D,P);
-   pixhex-d(_,_,_,D,P);
-   pixrgb-d(_,_,_,D,P).
-
-setPixel(X,Y,C,D,PixelCamb):-
-    pixbit-d(X,Y,C,D,PixelCamb);
-    pixhex-d(X,Y,C,D,PixelCamb).
-
-setPixel(X,Y,[R,G,B],D,PixelCamb):-
-    pixrgb-d(X,Y,R,G,B,D,PixelCamb).
-
-pix1([Pix1|_],Pix1).
-rest_Pixs([_|Resto],Resto).
+   pixbit(_,_,_,D,P);
+   pixhex(_,_,_,D,P);
+   pixrgb(_,_,_,_,_,D,P).
 
 % -------------------------------------------------------------------- %
-% Otros Operadores de pixel:
+% Selectores de pixeles:
+
+pix1([Pix1|_],Pix1).
+
+restPixs([_|Resto],Resto).
+
+% -------------------------------------------------------------------- %
+% Otros Operadores de pixeles:
 
 % Clausulas para ordenar pixeles o conservar el orden de esto (dependiendo
 % si están ordenados o no en x e y)
@@ -101,10 +98,12 @@ ordenarPixs(Pixeles,A,Pixeles_Ordenados):-
     moverPixs(Pixeles,0,A,Pixeles_Ordenados).
 
 % Clausulas para ver si los pixeles están ordenados o no
-pixs_estan_ordenados([Pix1|RestPixs],Pos_Correspondiente,A):-
+pixs_estan_ordenados(Pixeles,Pos_Correspondiente,A):-
     % Pos_correspondiente se ingresa como 0 y se va a ir incrementando en 1
     % La posición correspondiente (según el orden establecido) de un pixel
     % viene dado por: ancho * x + y, en la lista de pixeles
+    pix1(Pixeles,Pix1), restPixs(Pixeles,RestPixs),
+    % Obtengo x e y del pixel 1:
     getX(Pix1,X), getY(Pix1,Y),
     Pos_Pixel is A * X + Y,
     % Si no se cumple la igualdad, se retorna false
@@ -117,12 +116,16 @@ pixs_estan_ordenados([Pix1|RestPixs],Pos_Correspondiente,A):-
 pixs_estan_ordenados([],_,_). % Caso base: comprobar que todos los pixeles están en orden
 
 % Clausulas para obtener un pixel por posición
-getPixPorPosicion([Pix1|RestPixs],Pos_buscada,A,Pix_buscado,[Pix1|PixsNoBusc]):-
+getPixPorPosicion(Pixeles,Pos_buscada,A,Pix_buscado,[Pix1|PixsNoBusc]):-
+    % Obtengo el primer pixel (Pix1) y el resto de pixeles (RestPixs)
+    pix1(Pixeles, Pix1), restPixs(Pixeles, RestPixs),
     getX(Pix1,X), getY(Pix1,Y),
     Pos_Pixel is A * X + Y,
     Pos_Pixel =\= Pos_buscada,
     getPixPorPosicion(RestPixs,Pos_buscada,A,Pix_buscado,PixsNoBusc).
-getPixPorPosicion([Pix_buscado|RestPixs],Pos_buscada,A,Pix_buscado,RestPixs):-
+
+getPixPorPosicion(Pixeles,Pos_buscada,A,Pix_buscado,RestPixs):-
+    pix1(Pixeles, Pix_buscado), restPixs(Pixeles,RestPixs),
     getX(Pix_buscado,X), getY(Pix_buscado,Y),
     Pos_Pixel is A * X + Y,
     Pos_Pixel = Pos_buscada.
@@ -134,9 +137,7 @@ moverPixs(Pixeles,Posicion,A,[PixOrdenado|RestPixsOrd]):-
 moverPixs([],_,_,[]).
 
 % -------------------------------------------------------------------- %
-
 % Requerimiento 2:
-%
 image(Ancho, Alto, Pixeles, [Ancho,Alto,Pixs]):-
     integer(Ancho),
     integer(Alto),
@@ -145,26 +146,46 @@ image(Ancho, Alto, Pixeles, [Ancho,Alto,Pixs]):-
     % Si la imagen está comprimida, sus pixeles no se alteran
     ordenarPixs(Pixeles,Ancho,Pixs).
 
+% -------------------------------------------------------------------- %
 % Requerimiento 3:
 
 imageIsBitmap(I):-
-    image(_,_,[Pix1|_], I),
-    pixbit-d(_,_,_,_,Pix1).
-
+    image(_,_,Pixeles, I),
+    pix1(Pixeles,Pix1),
+    % al considerar la imagen como una estructura de pixeles
+    % homogeneos, solo basta analizar que sea pixbit el primer pixel
+    pixbit(_,_,_,_,Pix1).
+% -------------------------------------------------------------------- %
 % Requerimiento 4:
 
 imageIsPixmap(I):-
-    image(_,_,[Pix1|_], I),
-    pixrgb-d(_,_,_,_,_,_,Pix1).
-
+    image(_,_,Pixeles, I),
+    pix1(Pixeles,Pix1),
+    % al considerar la imagen como una estructura de pixeles
+    % homogeneos, solo basta analizar que sea pixrgb el primer pixel
+    pixrgb(_,_,_,_,_,_,Pix1).
+% -------------------------------------------------------------------- %
 % Requerimiento 5:
 
 imageIsHexmap(I):-
-    image(_,_,[Pix1|_],I),
-    pixhex-d(_,_,_,_,Pix1).
-
+    image(_,_,Pixeles,I),
+    pix1(Pixeles,Pix1),
+    % al considerar la imagen como una estructura de pixeles
+    % homogeneos, solo basta analizar que sea pixhex el primer pixel
+    pixhex(_,_,_,_,Pix1).
+% -------------------------------------------------------------------- %
 % Requerimiento 6:
 
+% La estructura para una imagen comprimida tiene la siguiente forma:
+% [Ancho, Alto, [-1, <Pixeles Comprimidos>, <Pixeles No Comprimidos>]]
+% donde -1 es un identificador en la zona de pixeles, para indicar
+% que la imagen está comprimida, es por ello que solo basta verificar
+% la existencia de este valor
+imageIsCompressed(I):-
+    % obtengo el primer pixel de la lista de pixeles
+    getPixeles(I,Pixeles), pix1(Pixeles,Valor),
+    number(Valor),
+    Valor = -1.
 % ------------------------------------------------------------------------------ %
 % Requerimiento 7:
 /*
@@ -180,6 +201,8 @@ invert_V(P,L,Pixs_V). P: pixs, L: largo, Pixs_V: pixs volteados horizontalmente
 Metas: principales: imageFlipH
 */
 imageFlipH(I1,I2):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I1))),
     getAncho(I1,A),
     getLargo(I1,L),
     getPixeles(I1,P),
@@ -187,23 +210,28 @@ imageFlipH(I1,I2):-
     image(A,L,Pixs_H,I2).
 
 % Clausula para invertir horizontalmente un pixel: (Y es horizontal)
-invY([X,Y,C,D], Ancho, [X,Yh,C,D]):-
-    % y_invertido = (ancho - 1) - y_pixel_a_invertir
+invY(Pixel, Ancho, [X,Yh,C,D]):-
     % Argumentos: Pixel (Entrada), Ancho imagen, Pixel volteado (Salida)
+    % Obtengo la información del pixel
+    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
+    % y_invertido = (ancho - 1) - y_pixel_a_invertir
     Yh is Ancho - 1 - Y.
 
 % Clausulas para invertir horizontalmente todos los pixeles:
 invert_H([],_,[]). % caso base: si se recorren todos los pixeles,
 % la lista de salida queda vacía
-invert_H([Pix1|Rest], Largo, [InvertidoH|RestInv]):-
+invert_H(Pixeles, Ancho, [InvertidoH|RestInv]):-
+    % Obtengo primer pixel y el resto de pixeles
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     % se invierte horizontalmente el pixel cabecera 'guardandose'
     % en la cabeza de la lista de pixeles invertidos
-    invY(Pix1, Largo, InvertidoH),
+    invY(Pix1, Ancho, InvertidoH),
     % se vuelve a realizar el mismo procedimiento con el resto
     % de pixeles, hasta llegar al hecho caso base.
-    invert_H(Rest, Largo, RestInv).
+    invert_H(Rest, Ancho, RestInv).
+
 % ------------------------------------------------------------------------------ %
-% ------------------------------------------------------------------------------ %
+% Requerimiento 8:
 /*
 Dominio:
 I1: imagen a operar
@@ -217,6 +245,8 @@ invert_V(P,L,Pixs_V). P: pixs, L: largo, Pixs_V: pixs volteados verticalmente
 Metas: Principales: imageFlipV
 */
 imageFlipV(I1,I2):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I1))),
     getAncho(I1,A),
     getLargo(I1,L),
     getPixeles(I1,P),
@@ -224,15 +254,19 @@ imageFlipV(I1,I2):-
     image(A,L,Pixs_V,I2).
 
 % Clausula (Regla) para invertir verticalmente un pixel: (X es vertical)
-invX([X,Y,C,D], Largo, [Xv,Y,C,D]):-
+invX(Pixel, Largo, [Xv,Y,C,D]):-
+    % Selecciono la información del pixel
+    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
     % x_invertido = (largo - 1) - x_pixel_a_invertir
     Xv is Largo - 1 - X.
 
 % Clausulas para invertir verticalmente todos los pixeles:
 invert_V([],_,[]). % HECHO - caso base: si se recorren todos los pixeles,
 % la lista de salida queda vacía
-invert_V([Pix1|Rest], Largo, [InvertidoV|RestInv]):-
+invert_V(Pixeles, Largo, [InvertidoV|RestInv]):-
     % REGLA - para invertir verticalmente una lista de pixeles.
+    % Obtengo el primer pixel y el resto
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     % Se invierte verticalmente el pixel cabecera 'guardandose'
     % en la cabeza de la lista de pixeles invertidos
     invX(Pix1, Largo, InvertidoV),
@@ -240,6 +274,7 @@ invert_V([Pix1|Rest], Largo, [InvertidoV|RestInv]):-
     % de pixeles, hasta llegar al hecho caso base.
     invert_V(Rest, Largo, RestInv).
 % ------------------------------------------------------------------------------ %
+% Requerimiento 9:
 /*
 Dominio:
 I1: imagen a operar
@@ -247,7 +282,7 @@ X1: primer parametro en X para recortar la imagen
 Y1: primer parametro en Y para recortar la imagen
 X2: segundo parametro en X para recortar la imagen
 Y2: segundo parametro en Y para recortar la imagen
-I2: imagen volteada verticalmente
+I2: imagen recortada
 
 X0: marcador de posicion en X para ajuste de coordenadas de pixeles no recortados
 Y0: marcador de posicion en Y para ajuste de coordenadas de pixeles no recortados
@@ -262,15 +297,34 @@ Metas: Principales: imageCrop
 
 % Clausula para recortar imagen: (REGLA)
 imageCrop(I1,X1,Y1,X2,Y2,I2):-
-    integer(X1),
-    integer(Y1),
-    integer(X2),
-    integer(Y2),
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I1))),
+    % Primero se verifica que los puntos de corte sean enteros
+    integer(X1), integer(Y1), integer(X2), integer(Y2),
+    % Se verifica que los puntos estén dentro del límite de
+    % la imagen (los X entre Largo y 0, los Y entre Ancho y 0
+    getAncho(I1,Ancho), getLargo(I1,Largo),
+    X1 < Largo, X1 >= 0, X2 < Largo, X2 >= 0,
+    Y1 < Ancho, Y1 >= 0, Y2 < Largo, Y2 >= 0,
+    % Ordeno las coordenadas de entrada en caso que vengan
+    % desordenadas
+    ordenX1X2Y1Y2(X1,X2,Y1,Y2,X_1,X_2,Y_1,Y_2),
     getPixeles(I1,Pixs),
-    recortarpixs(Pixs,X1,X2,Y1,Y2,0,0,PixsCrop),
-    NewA is Y2 - Y1  + 1, % nuevo Ancho
-    NewL is X2 - X1 + 1, % nuevo Largo
+    recortarpixs(Pixs,X_1,X_2,Y_1,Y_2,0,0,PixsCrop),
+    NewA is Y_2 - Y_1  + 1, % nuevo Ancho
+    NewL is X_2 - X_1 + 1, % nuevo Largo
     image(NewA,NewL,PixsCrop,I2).
+
+% Clausula para retornar mayor y menor coordenada (en caso que vengan
+% desordenadas)
+ordenX1X2Y1Y2(X1,X2,Y1,Y2,X1,X2,Y1,Y2):-
+    X1 =< X2, Y1 =< Y2.
+ordenX1X2Y1Y2(X1,X2,Y1,Y2,X2,X1,Y2,Y1):-
+    X1 > X2, Y1 > Y2.
+ordenX1X2Y1Y2(X1,X2,Y1,Y2,X1,X2,Y2,Y1):-
+    X1 =< X2, Y1 > Y2.
+ordenX1X2Y1Y2(X1,X2,Y1,Y2,X2,X1,Y1,Y2):-
+    X1 > X2, Y1 =< Y2.
 
 % Clausula para ver si un pixel está entre el intervalo X e Y
 % que no será recortado (REGLA):
@@ -287,13 +341,16 @@ recortarpixs([],_,_,_,_,_,_,[]). % HECHO - Caso base: cuando se
 % recorrieron todos los pixeles, recortando y dejandolos en base
 % a si sus coordenadas están dentro del intervalo de recorte
 
-recortarpixs([Pix1|Rest],X1,X2,Y1,Y2,X0,Y0,[[X0,Y0,C,D]|Rest2]):-
-    % Caso donde el pixel está dentro del cuadrante a recortar:
-    % se incluye en el conjunto de pixeles de salida
+recortarpixs(Pixeles,X1,X2,Y1,Y2,X0,Y0,[[X0,Y0,C,D]|Rest2]):-
+    % - Caso donde el pixel está dentro del cuadrante a recortar:
+    % se incluye en el conjunto de pixeles de salida, donde se alcancen
+    % los límites de recorte en Y.
+    % Obtengo primer y resto de pixeles:
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
+    % Veo si el pixel está entre los puntos de corte
     entrex1x2y1y2(Pix1,X1,X2,Y1,Y2),
     % Obtengo la información del pixel a conservar: color y profundidad
-    getColor(Pix1,C),
-    getD(Pix1,D),
+    getColor(Pix1,C), getD(Pix1,D),
     % X0 e Y0 serán iteradores para ir moviendo las coordenadas
     % dentro del cuadrante de recorte y ajustarlas para el pixel
     % a conservar
@@ -304,13 +361,15 @@ recortarpixs([Pix1|Rest],X1,X2,Y1,Y2,X0,Y0,[[X0,Y0,C,D]|Rest2]):-
     Xsgte is X0 + 1,
     recortarpixs(Rest,X1,X2,Y1,Y2,Xsgte,0,Rest2).
 
-recortarpixs([Pix1|Rest],X1,X2,Y1,Y2,X0,Y0,[[X0,Y0,C,D]|Rest2]):-
-    % Caso donde el pixel está dentro del cuadrante a recortar:
-    % se incluye en el conjunto de pixeles de salida
+recortarpixs(Pixeles,X1,X2,Y1,Y2,X0,Y0,[[X0,Y0,C,D]|Rest2]):-
+    % - Caso donde el pixel está dentro del cuadrante a recortar:
+    % se incluye en el conjunto de pixeles de salida, donde no se
+    % alcancen los límites en Y de recorte
+    % Obtengo primer y resto de pixeles:
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     entrex1x2y1y2(Pix1,X1,X2,Y1,Y2),
     % Obtengo la información del pixel a conservar: color y profundidad
-    getColor(Pix1,C),
-    getD(Pix1,D),
+    getColor(Pix1,C), getD(Pix1,D),
     % X0 e Y0 serán iteradores para ir moviendo las coordenadas
     % dentro del cuadrante de recorte y ajustarlas para el pixel
     % a conservar
@@ -321,16 +380,36 @@ recortarpixs([Pix1|Rest],X1,X2,Y1,Y2,X0,Y0,[[X0,Y0,C,D]|Rest2]):-
     Ysgte is Y0 + 1,
     recortarpixs(Rest,X1,X2,Y1,Y2,X0,Ysgte,Rest2).
 
-recortarpixs([Pix1|Rest],X1,X2,Y1,Y2,X0,Y0,Rest2):-
-    % si el pixel no está dentro del cuadrante de recorte
+recortarpixs(Pixeles,X1,X2,Y1,Y2,X0,Y0,Rest2):-
+    % - Caso: si el pixel no está dentro del cuadrante de recorte
     % no se incluye en la lista de pixeles conservados
+    % Obtengo primer y resto de pixeles:
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     not(entrex1x2y1y2(Pix1,X1,X2,Y1,Y2)),
     recortarpixs(Rest,X1,X2,Y1,Y2,X0,Y0,Rest2).
 
 % ------------------------------------------------------------------------------ %
+% Requerimiento 10:
+/*
+Dominio:
+I1: imagen a operar (image pixmap)
+I2: imagen volteada verticalmente
 
-% ------------------------------------------------------------------------------ %
+Predicados:
+imageRGBToHex(I1, I2).
+hexa(X, XtoStr).
+canal_a_hex(Canal,Hexadecimal).
+conv_a_hex([X,Y,[R,G,B],D],Pix_hexa).
+pixsToHex(Pixeles, [PixsHex|RestHex])
+
+Metas: Principales: imageRGBToHex
+*/
 imageRGBToHex(I1, I2):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I1))),
+    % Para poder llevarse a cabo el predicado, la imagen
+    % debe ser pixmap (de pixeles pixrgb)
+    imageIsPixmap(I1),
     getAncho(I1,A),
     getLargo(I1,L),
     getPixeles(I1,Pixeles),
@@ -360,30 +439,54 @@ canal_a_hex(Canal,Hexadecimal):-
     string_concat(Hexa1,Hexa2,Hexadecimal).
 
 % Clausula para convertir un pixel a hexadecimal
-conv_a_hex([X,Y,[R,G,B],D],Pix_hexa):-
-    canal_a_hex(R,R_hex),
-    canal_a_hex(G,G_hex),
+conv_a_hex(Pixel,Pix_hexa):-
+    % Obtengo la información del pixel
+    getX(Pixel,X), getY(Pixel,Y),
+    getColor(Pixel,[R,G,B]), getD(Pixel,D),
+    % Convierto el valor de los canales a hexadecimal
+    canal_a_hex(R,R_hex), canal_a_hex(G,G_hex),
     canal_a_hex(B,B_hex),
+    % Concateno (uno) los strings de los canales a hexadecimal
     string_concat("#",R_hex,Parte1),
     string_concat(G_hex,B_hex,Parte2),
     string_concat(Parte1,Parte2,Str_hexa),
-    pixhex-d(X,Y,Str_hexa,D,Pix_hexa).
+    % En Pix_hexa queda el pixel convertido
+    pixhex(X,Y,Str_hexa,D,Pix_hexa).
 
 % Clausulas para convertir a Hexadecimal todos los pixeles RGB:
 pixsToHex([],[]). % HECHO - caso base: si se recorren todos los pixeles,
 % convertiendose la lista de salida queda vacía
-pixsToHex([Pix1|Rest], [PixsHex|RestHex]):-
+pixsToHex(Pixeles, [PixsHex|RestHex]):-
     % REGLA - para convertir a hexadecimal una lista de pixeles.
     % Se convierte a hexadecimal el pixel cabecera 'guardandose'
     % en la cabeza de la lista de pixeles hexadecimales
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     conv_a_hex(Pix1, PixsHex),
     % se vuelve a realizar el mismo procedimiento con el resto
     % de pixeles, hasta llegar al hecho caso base.
     pixsToHex(Rest, RestHex).
 
 % ------------------------------------------------------------------------------ %
+% Requerimiento 11:
+/*
+Dominio:
+I1: imagen a operar
+Histograma
+
+Predicados:
+imageToHistogram(I,Histograma).
+mismocolor(Pixeles,Color,Repeticion,[Pix1|Rest2]).
+contarcolores(Pixeles,[[Color,Repeticion]|Cola]).
+
+Recursión utilizada: natural(para contar las repeticiones de un color),
+                     y de cola (para contar todos los colores de los pixeles)
+
+Metas: Principales: imageToHistogram
+*/
 
 imageToHistogram(I,Histograma):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I))),
     getPixeles(I,Pixeles),
     contarcolores(Pixeles,Histograma).
 
@@ -406,21 +509,21 @@ mismocolor([Pix1|Rest],Color,Repeticion,[Pix1|Rest2]):-
 % almacenarlos en una lista
 contarcolores([],[]). % HECHO - caso base: contar los colores de
 % todos los pixeles y almacenar las cuentas en una lista
-contarcolores([Pix1|Rest],[[Color,Repeticion]|Cola]):-
+contarcolores(Pixeles,[[Color,Repeticion]|Cola]):-
+    % Obtengo primer pixel
+    pix1(Pixeles,Pix1),
     % Se toma en cuenta el color del pixel cabecera almacenando
     % esa información en la lista (salida) de conteo de colores
     getColor(Pix1,Color),
     % Se cuenta el color especifico del pixel cabecera
     % Desde la llamada se obtiene Repeticion el cual es un dato
     % que tambien se deja en la lista de conteo de colores
-    mismocolor([Pix1|Rest],Color,Repeticion,PixsRest),
+    mismocolor(Pixeles,Color,Repeticion,PixsRest),
     % Se vuelve a realizar la llamada recursiva, pero con los
     % pixeles restantes que no tienen el color contado
     contarcolores(PixsRest,Cola).
-
 % ------------------------------------------------------------------------------ %
-
-% ------------------------------------------------------------------------------ %
+% Requerimiento 12:
 /*
 Dominio:
 I1: imagen a operar
@@ -431,9 +534,14 @@ imageRotate90(I1,I2).
 rotXY([X,Y,C,D], Largo, [X,Yrot,C,D]). Yrot: Y rotado 90 grados a la derecha
 rot90(P,L,Pixs_Rot). P: pixs, L: largo, Pixs_V: pixs rotados 90° a la derecha
 
+Recursión utilizada: de cola (para rotar todos los pixeles), sin dejar
+                     estados en espera
+
 Metas: Principales: imageRotate90
 */
 imageRotate90(I1,I2):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I1))),
     getAncho(I1,A),
     getLargo(I1,L),
     getPixeles(I1,P),
@@ -443,20 +551,26 @@ imageRotate90(I1,I2):-
     image(L,A,Pixs_Rot,I2).
 
 % Clausula para rotar 90° a la derecha un pixel
-rotXY([X,Y,C,D], Largo, [Y,Yrot,C,D]):-
+rotXY(Pixel, Largo, [Y,Yrot,C,D]):-
+    % Obtengo la información del pixel:
+    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
+    % Para rotar el pixel, sus coordenadas siguen el siguiente patrón:
     % (x_original, y _original) -> (y_original, largo - 1 - x_original)
+    % el resto de información se conserva
     Yrot is Largo - 1 - X.
 
 % Clausulas para rotar 90° todos los pixeles de una lista
 rot90([],_,[]). % HECHO - caso base: cuando se recorren todos los pixeles
 % rotandose cada uno 90 grados.
-rot90([Pix1|Rest], Largo, [Pix1_2|Rest2]):-
+rot90(Pixeles, Largo, [Pix1_2|Rest2]):-
+    % Obtengo primer y resto de pixeles
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     % Se rota el pixel cabecera y se incluye en la lista de pixeles rotados
     rotXY(Pix1, Largo, Pix1_2),
     % Se realiza el mismo procedimiento con el resto de pixeles
     rot90(Rest, Largo, Rest2).
-
 % ------------------------------------------------------------------------------ %
+% Requerimiento 13:
 /*
 Dominio:
 I1: imagen a operar
@@ -475,6 +589,8 @@ comprimir(Pixeles,ColorMasRep,PosInicial,Conservados,PosComprimidos,Comprimidos)
 Metas: Principales: imageCompress
 */
 imageCompress(I,I2):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I))),
     imageToHistogram(I, Histograma),
     % Hallo el color más repetido del histograma
     % coloco un -1 como referencia de conteo, ya que los colores no pueden
@@ -503,13 +619,25 @@ maxcolor([[_,Rep]|Cola],Max_ref,C_maxRef,A):-
 
 % Clausulas para separar pixeles comprimidos (con sus posiciones) y conservados
 comprimir([],_,_,[],[],[]).
-comprimir([[X,Y,C,D]|RestPixs], C, Pos, Conserv, [Pos|RestPos],[[X,Y,C,D]|RestComp]):-
+comprimir(Pixeles, C, Pos, Conserv, [Pos|RestPos],[Pix1|RestComp]):-
+    % Caso donde el pixel cabecera coincide con el color a comprimir,
+    % agregandolo a la lista de pixeles comprimidos, además de la
+    % posición en la lista de posiciones de pixeles comprimidos
+    % Obtengo primer y resto de pixeles, además del color del
+    % pixel que debe coincidir con el color más repetido (del dom)
+    pix1(Pixeles,Pix1), restPixs(Pixeles,RestPixs), getColor(Pix1,C),
     PosSgte is Pos + 1,
     comprimir(RestPixs, C, PosSgte, Conserv, RestPos, RestComp).
-comprimir([Pix1|RestPixs],C,Pos,[Pix1|RestConserv],PosComp,Comprimidos):-
+comprimir(Pixeles,C,Pos,[Pix1|RestConserv],PosComp,Comprimidos):-
+    % Caso donde el pixel cabecera no coincide con el color a comprimir
+    % se agrega el pixel en la lista de conservados
+    pix1(Pixeles,Pix1), restPixs(Pixeles,RestPixs),
+    % se avanza la posición y se repite el proceso con el resto de
+    % pixeles
     PosSgte is Pos + 1,
     comprimir(RestPixs,C,PosSgte,RestConserv,PosComp,Comprimidos).
 % ------------------------------------------------------------------------------ %
+% Requerimiento 14:
 /*
 Dominio:
 I1: imagen a operar
@@ -520,13 +648,24 @@ Predicados:
 imageChangePixel(I,NewPixel,I2).
 reemplazarPix(Pixeles, NewPixel, NewPixels).
 	NewPixels: pixeles con el pixel nuevo incluido
+esCompatible(I,NewPixel).
 
 Metas: Principales: imageChangePixel
 */
 imageChangePixel(I,NewPixel,I2):-
-    getAncho(I,A),
-    getLargo(I,L),
-    getPixeles(I,Pixeles),
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I))),
+    % Para llevar a cabo este predicado el pixel a cambiar
+    % debe ser compatible con el tipo de imagen
+    esCompatible(I,NewPixel),
+    % Obtengo la información de la imagen
+    getAncho(I,A), getLargo(I,L), getPixeles(I,Pixeles),
+    % Se debe verificar que las coordenadas del nuevo pixel
+    % estén dentro del espacio que ocupa la imagen
+    getX(NewPixel,X), getY(NewPixel,Y),
+    X >= 0, Y >= 0, X < L, Y < A,
+    % Reemplazo el nuevo pixel según sus coordenadas en el
+    % arreglo de pixeles
     reemplazarPix(Pixeles, NewPixel, NewPixels),
     image(A,L,NewPixels, I2).
 
@@ -534,15 +673,36 @@ imageChangePixel(I,NewPixel,I2):-
 % Dominio: pixeles originales X pixel nuevo X pixeles modificados
 reemplazarPix([],_,[]). % Hecho - Caso base: que la lista de pixeles
 % se recorren completamente
-% Caso donde el pixel a cambiar cooincide con las coordenadas X Y (atributo
-% único de un pixel) con el pixel a reemplazar
-reemplazarPix([[X,Y,_,_]|RestPixs], [X,Y,C,D] , [[X,Y,C,D]|RestPixsNew]):-
-    reemplazarPix(RestPixs, [X,Y,C,D], RestPixsNew).
+
+reemplazarPix(Pixeles, [X,Y,C,D] , [[X,Y,C,D]|RestPixs]):-
+    % Caso donde el pixel a cambiar cooincide con las coordenadas
+	% X Y (atributo único de un pixel) con el pixel a reemplazar
+    % Obtengo pixel cabecera y el resto de pixeles
+    pix1(Pixeles,Pix1), restPixs(Pixeles, RestPixs),
+    % obtengo la información del pixel cabecera que coincide
+    % con las coordenadas del pixel nuevo
+    getX(Pix1,X), getY(Pix1,Y).
+
 % Caso donde el pixel a cambiar no cooincide con las coordenadas del pixel
 % a reemplazar, se colocan los pixeles originales
-reemplazarPix([Pix1|RestPixs], NewPix , [Pix1|RestPixsNew]):-
+reemplazarPix(Pixeles, NewPix, [Pix1|RestPixsNew]):-
+    pix1(Pixeles,Pix1), restPixs(Pixeles,RestPixs),
     reemplazarPix(RestPixs, NewPix, RestPixsNew).
+
+% Clausulas para ver que el pixel a cambiar es compatible con el
+% tipo de imagen a operar
+esCompatible(I,NewPixel):-
+    % si el pixel es pixbit, la imagen debe ser bitmap
+    pixbit(_,_,_,_,NewPixel), imageIsBitmap(I).
+esCompatible(I,NewPixel):-
+    % si el pixel es pixrgb, la imagen debe ser pixmap
+    pixrgb(_,_,_,_,_,_,NewPixel), imageIsPixmap(I).
+esCompatible(I,NewPixel):-
+    % si el pixel es pixhex, la imagen debe ser hexmap
+    pixhex(_,_,_,_,NewPixel), imageIsHexmap(I).
+
 % ------------------------------------------------------------------------------ %
+% Requerimiento 15:
 /*
 Dominio:
 Pixel: pixrgb-d a operar
@@ -551,21 +711,22 @@ Pix_inv: pixrgb-d con sus canales RGB volteados
 Predicados:
 invertColorRGB(Pixel,Pix_inv)
 
-Metas: Principales: invertColorRGB
+Metas: Principales: imageInvertColorRGB
 */
-invertColorRGB(Pixel,Pix_inv):-
+imageInvertColorRGB(Pixel,Pix_inv):-
+    % Verifico que el pixel sea pixrgb
+    pixrgb(_,_,_,_,_,_,Pixel),
     % Obtengo la información del pixel original
-    getX(Pixel,X),
-    getY(Pixel,Y),
-    getColor(Pixel,[R,G,B]),
-    getD(Pixel,D),
+    getX(Pixel,X), getY(Pixel,Y),
+    getColor(Pixel,[R,G,B]), getD(Pixel,D),
     % Para invertir cada canal resto 255 con cada valor
     R_inv is 255 - R,
     G_inv is 255 - G,
     B_inv is 255 - B,
     % Construyo el nuevo pixel con los canales invertidos
-    pixrgb-d(X,Y,R_inv,G_inv,B_inv,D,Pix_inv).
+    pixrgb(X,Y,R_inv,G_inv,B_inv,D,Pix_inv).
 % ------------------------------------------------------------------------------ %
+% Requerimiento 16:
 /*
 Dominio:
 I: imagen a operar
@@ -583,6 +744,8 @@ colorString(Color,ColorStr) -> convierte el color de un pixel a string
 Metas: Principales: imageToString
 */
 imageToString(I,Str):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I))),
     % Obtengo la información de la imagen
     getAncho(I,A),
     getPixeles(I,Pixeles),
@@ -629,21 +792,46 @@ colorString(Bit,Str):- % En caso del color bit de un pixbit-d
 colorString([R,G,B], Str):- % En caso de canales de color de un pixrgb-d
     integer(R), integer(G), integer(B),
     % Paso a string los 3 canales
-    number_string(R, Rstr),
-    number_string(G, Gstr),
-    number_string(B, Bstr),
+    number_string(R, Rstr),number_string(G, Gstr),number_string(B, Bstr),
     % Uno cada canal con un espacio (para que en la representación
     % estén distanciados entre si)
-    string_concat(Rstr," ", R_str),
-    string_concat(Gstr, " ", G_str),
+    string_concat(Rstr," ", R_str), string_concat(Gstr, " ", G_str),
     string_concat(Bstr, " ", B_str),
     % Uno el valor Red con Green en un string
     string_concat(R_str,G_str,R_G_Str),
-    % Uno el valor RG con Blue en el string de argumento "Str" (salida)
-    string_concat(R_G_Str, B_str, Str).
+    % Uno el valor RG con Blue
+    string_concat(R_G_Str, B_str, RGB_Str),
+    % Luego uno el RGB string con dos parentesis para encerrar
+    string_concat(RGB_Str, ")", RGB_P),
+    % guardo el string final en el de argumento "Str" (salida)
+    string_concat("(", RGB_P, Str).
 % ------------------------------------------------------------------------------ %
-% ------------------------------------------------------------------------------ %
+% Requerimiento 17:
+/*
+Dominio:
+I: imagen a operar
+LI: lista de imagenes (image list)
+
+Predicados:
+imageDepthLayers(I,LI).
+separarD(Pixeles,PixelesCopia,[ImageD|RestImages],A,L).
+	- PixelesCopia: copia de los pixeles de la imagen
+	- ImageD: será una imagen con todos sus pixeles de la misma profundidad
+    rellenado con pixeles blancos (si no se encuentran pixeles de dicha
+    profundidad)
+    - A: ancho de la imagen
+    - L: largo de la imagen
+whitePixel(Pixel,D,PixelBlanco).
+	- Pixel: pixel a convertir en blanco
+    - D: profundidad
+    - PixelBlanco: pixel a convertir en blanco con la profundidad
+    especifica a colocar
+
+Metas: Principales: imageDepthLayers.
+*/
 imageDepthLayers(I,LI):-
+    % la imagen a operar no debe estar comprimida
+    (not(imageIsCompressed(I1))),
     getAncho(I,A), getLargo(I,L),
     getPixeles(I,Pixeles),
     separarD(Pixeles,Pixeles,LI,A,L).
@@ -652,8 +840,11 @@ imageDepthLayers(I,LI):-
 % estos, más el ancho y largo de la imagen, almacenandose la operación en
 % una lista de imagenesD
 separarD([],_,[],_,_).
-separarD([Pixel|_],PixelesCopia,[ImageD|RestImages],A,L):-
-    getD(Pixel,D),
+separarD(Pixeles,PixelesCopia,[ImageD|RestImages],A,L):-
+    % Obtengo el primer pixel de la lista de pixeles y la profundidad
+    % de este
+    pix1(Pixeles,Pixel), getD(Pixel,D),
+    % Obtengo los pixeles de misma y de diferente profundidad
     mismaprof(PixelesCopia, D, PixelesD, PixsDRest,0),
     image(A,L,PixelesD,ImageD),
     separarD(PixsDRest,PixelesCopia,RestImages,A,L).
@@ -696,58 +887,65 @@ mismaprof([Pixel|Rest],D,[PixBlancoD|RestPixsD],RestPixsDifD,0):-
 
 % Clausulas para cambiar la profundidad de un pixel y pasarlo a blanco
 whitePixel(Pixel,D,PixelBlanco):- % CASO pixbit-d
-    pixbit-d(_,_,_,_,Pixel),
+    pixbit(_,_,_,_,Pixel),
     getX(Pixel,X), getY(Pixel,Y),
-    pixbit-d(X,Y,1,D,PixelBlanco).
+    pixbit(X,Y,1,D,PixelBlanco).
 whitePixel(Pixel,D,PixelBlanco):- % CASO pixhex-d
-    pixhex-d(_,_,_,_,Pixel),
+    pixhex(_,_,_,_,Pixel),
     getX(Pixel,X), getY(Pixel,Y),
-    pixhex-d(X,Y,'#FFFFFF',D,PixelBlanco).
+    pixhex(X,Y,'#FFFFFF',D,PixelBlanco).
 whitePixel(Pixel,D,PixelBlanco):- % CASO pixrgb-d
-    pixrgb-d(_,_,_,_,_,_,Pixel),
+    pixrgb(_,_,_,_,_,_,Pixel),
     getX(Pixel,X), getY(Pixel,Y),
-    pixrgb-d(X,Y,255,255,255,D,PixelBlanco).
+    pixrgb(X,Y,255,255,255,D,PixelBlanco).
 % ------------------------------------------------------------------------------ %
+% Requerimiento 18:
+/*
+Dominio:
+I: imagen comprimida
+I2: imagen descomprimida
+
+Predicados:
+imageDecompress(I,I2).
+recuperarPixs(Pixeles,I,PixelesDescomp).
+	- Pixeles: pixeles de la imagen comprimida
+    del formato <-1, Comprimidos, PixelesNoComprimidos>
+	Formato Comprimidos: <Pos_Comp, PixelesComprimidos>
+	Pos_Comp: posiciones de los pixeles comprimidos
+        PixelesComprimidos: los pixeles comprimidos
+	- I: iterador de posición (inicia en 0)
+    - PixelesDescomp: pixeles comprimidos y no comprimidos unidos
+    en una nueva lista de pixeles
+
+Metas: Principales: imageDecompress.
+*/
 imageDecompress(I,I2):-
-    getPixeles(I,Pixeles),
-    getAncho(I,A),
-    getLargo(I,L),
+    % para descomprimir la imagen debe estar comprimida
+    imageIsCompressed(I),
+    % Obtengo la información de la imagen
+    getPixeles(I,Pixeles), getAncho(I,A), getLargo(I,L),
+    % Descomprimo los pixeles
     recuperarPixs(Pixeles,0,PixelesDescomp),
+    % Creo la nueva imagen con los pixeles descomprimidos
     image(A,L,PixelesDescomp,I2).
 
 % Contador I inicia en 0
 % HECHO - caso base: cuando ya se recorrieron todos los pixeles comprimidos,
 % conservados y las posiciones de la lista de posiciones
 recuperarPixs([_,[[],[]],[]],_,[]).
-% Caso donde contador I coincide con la primera posicion de comprimidos
 recuperarPixs([_,[[I|RestPos],[Comp1|RestComp]],Conserv], I,
               [Comp1|RestRecuperados]):-
+    % - Caso donde contador I coincide con la primera posicion de comprimidos
     % En este caso se agrega el primer pixel comprimido a los recuperados
     Isgte is I + 1,
     recuperarPixs([_,[RestPos,RestComp],Conserv],Isgte,RestRecuperados).
-% Caso donde el contador no coincide con la posicion de comprimidos
 recuperarPixs([_,[Pos,Comprimidos],[Conserv1|RestConserv]], I,
               [Conserv1|RestRecuperados]):-
+    % - Caso donde el contador no coincide con la posicion de comprimidos
     % En este caso se agrega el primer pixel conservado a
     % los pixeles recuperados
     Isgte is I + 1,
     recuperarPixs([_,[Pos,Comprimidos],RestConserv],Isgte,RestRecuperados).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
