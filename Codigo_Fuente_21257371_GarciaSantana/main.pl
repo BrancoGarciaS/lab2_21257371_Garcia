@@ -831,7 +831,7 @@ Metas: Principales: imageDepthLayers.
 */
 imageDepthLayers(I,LI):-
     % la imagen a operar no debe estar comprimida
-    (not(imageIsCompressed(I1))),
+    (not(imageIsCompressed(I))),
     getAncho(I,A), getLargo(I,L),
     getPixeles(I,Pixeles),
     separarD(Pixeles,Pixeles,LI,A,L).
