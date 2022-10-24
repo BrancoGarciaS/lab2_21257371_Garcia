@@ -61,6 +61,54 @@ getD(P,D):- % Selector de profundidad del pixel
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
 
 
+% ############################################################################## %
+% TDA pixhex
+% ############################################################################## %
+/*
+- Predicados:
+
+Constructor:
+pixhex(X, Y, Color, Profundidad, Pixel).
+
+Selectores:
+getX(P,X).
+getY(P,Y).
+getColor(P,C).
+getD(P,D).
+*/
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+% CONSTRUCTOR:
+% Constructor de pixhex:
+pixhex(X, Y, Color, Profundidad, [X,Y,Color,Profundidad]):-
+    % Dominio: X (coordenada X del pixel), Y (coordenada Y del pixel),
+    %		  Color (Color string del pixel), Profundidad,
+    %		  Pixhex en formato lista
+    integer(X),
+    integer(Y),
+    string(Color),
+    integer(Profundidad).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+% SELECTORES:
+
+getX(P,X):- % Selector de coordenada X del pixel
+    % Dominio: pixel (pixhex), X (coordenada X a obtener del pixel)
+    pixhex(X,_,_,_,P).
+
+getY(P,Y):- % Selector de coordenada Y del pixel
+    % Dominio: pixel (pixhex), Y (coordenada Y a obtener del pixel)
+    pixhex(_,Y,_,_,P).
+
+getColor(P,C):- % Selector de color del pixel
+    % Dominio: pixel (pixhex), Color (a obtener del pixel)
+    pixhex(_,_,C,_,P).
+
+getD(P,D):- % Selector de profundidad del pixel
+   pixhex(_,_,_,D,P).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+
 
 
 
