@@ -109,6 +109,65 @@ getD(P,D):- % Selector de profundidad del pixel
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
 
+% ############################################################################## %
+% TDA pixrgb
+% ############################################################################## %
+/*
+- Predicados:
+
+Constructor:
+pixrgb(X, Y, Red, Blue, Green, Profundidad, Pixel).
+
+Selectores:
+getX(P,X).
+getY(P,Y).
+getColor(P,C).
+getD(P,D).
+*/
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+% CONSTRUCTOR:
+
+pixrgb(X, Y, Red, Green, Blue, Profundidad, [X,Y,[Red,Green,Blue],Profundidad]):-
+    % Dominio:
+    % X: entero que representa la coordenada X del pixel
+    % Y: entero que representa la coordenada Y del pixel
+    % Red: canal rojo de un pixrgb-d
+    % Green: canal verde de un pixrgb-d
+    % Blue: canal azul de un pixrgb-d
+    % Profundidad: profundidad de un pixel
+    % Pixel pixrgb (construido en formato lista)
+    integer(X),
+    integer(Y),
+    integer(Red),
+    Red >= 0,
+    Red =< 255,
+    integer(Green),
+    Green >= 0,
+    Green =< 255,
+    integer(Blue),
+    Blue >= 0,
+    Blue =< 255,
+    integer(Profundidad).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+% SELECTORES:
+getX(P,X):- % Selector de coordenada X del pixel
+    % Dominio: pixel (pixrgb), X (coordenada X a obtener del pixel)
+    pixrgb(X,_,_,_,_,_,P).
+
+getY(P,Y):- % Selector de coordenada Y del pixel
+    % Dominio: pixel (pixrgb), Y (coordenada Y a obtener del pixel)
+    pixrgb(_,Y,_,_,_,_,P).
+
+getColor(P,[R,G,B]):- % Selector de color del pixel
+    % Dominio: pixel (pixrgb), Colores (a obtener del pixel en formato lista)
+    pixrgb(_,_,R,G,B,_,P).
+
+getD(P,D):- % Selector de profundidad del pixel
+   pixrgb(_,_,_,_,_,D,P).
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
 
 
 
