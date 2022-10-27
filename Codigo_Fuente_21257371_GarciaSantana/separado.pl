@@ -211,6 +211,33 @@ getPixPorPosicion(Pixeles,Pos_buscada,A,Pix_buscado,RestPixs):-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+% Predicados de pertenencia:
+
+% - Clausulas para ver si los pixeles están ordenados o no
+% Dominio: Pixeles, Pos_Correspondiente (iterador de posiciones iniciado en 0),
+%          A (ancho de la imagen)
+% Caso base: comprobar que todos los pixeles están en orden
+pixs_estan_ordenados([],_,_).
+pixs_estan_ordenados(Pixeles,Pos_Correspondiente,A):-
+    % Pos_correspondiente se ingresa como 0 y se va a ir incrementando en 1
+    % La posición correspondiente (según el orden establecido) de un pixel
+    % viene dado por: ancho * x + y, en la lista de pixeles
+    pix1(Pixeles,Pix1), restPixs(Pixeles,RestPixs),
+    % Obtengo x e y del pixel 1:
+    getX(Pix1,X), getY(Pix1,Y),
+    Pos_Pixel is A * X + Y,
+    % Si no se cumple la igualdad, se retorna false
+    Pos_Pixel = Pos_Correspondiente,
+    % Si se cumple se sigue incrementando el contador de posición
+    % hasta recorrer todos los pixeles comprobando que están ordenados
+    % o hasta encontrar un pixel desordenado que no cumpla la igualdad
+    Pos_sgte is Pos_Correspondiente + 1,
+    pixs_estan_ordenados(RestPixs,Pos_sgte,A).
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
+
 
 
 
