@@ -33,8 +33,20 @@ pixbit(X, Y, Bit, Profundidad, [X,Y,Bit,Profundidad]):-
     integer(X),
     integer(Y),
     integer(Bit),
-    Bit = 1; Bit = 0,
-    integer(Profundidad),!.
+    Bit = 1, % Caso donde el bit es 1
+    integer(Profundidad), !.
+
+pixbit(X, Y, Bit, Profundidad, [X,Y,Bit,Profundidad]):-
+    % Dominio: X (coordenada X del pixel), Y (coordenada Y del pixel),
+    %		  Bit (Color Bit del pixel), Profundidad, Pixel en formato lista
+    % Goals: pixbit (lista), construir un pixel tipo pixbit-d
+    % Aridad: 5
+    % Tipo de predicado: regla
+    integer(X),
+    integer(Y),
+    integer(Bit),
+    Bit = 0, % Caso donde el bit es 0
+    integer(Profundidad), !.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  %
 % SELECTORES:
