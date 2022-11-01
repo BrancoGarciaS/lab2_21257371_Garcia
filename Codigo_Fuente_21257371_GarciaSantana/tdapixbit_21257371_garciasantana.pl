@@ -1,4 +1,4 @@
-:- module(tda_pixbit_21257371_GarciaSantana,[pixbit/5,getX_b/2,getY_b/2,
+:- module(tdapixbit_21257371_garciasantana,[pixbit/5,getX_b/2,getY_b/2,
                                              getColor_b/2,getD_b/2]).
 
 % ############################################################################## %

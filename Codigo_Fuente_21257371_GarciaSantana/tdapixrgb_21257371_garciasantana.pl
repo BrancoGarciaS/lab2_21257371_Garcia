@@ -1,5 +1,4 @@
-:- module(tdapixrgb,[pixrgb/7,getX_r/2,getY_r/2,getColor_r/2,getD_r/2]).
-
+:- module(tda_pixbit_21257371_GarciaSantana,[pixrgb/7,getX_r/2,getY_r/2,getColor_r/2,getD_r/2]).
 % ############################################################################## %
 
 % TDA pixrgb
