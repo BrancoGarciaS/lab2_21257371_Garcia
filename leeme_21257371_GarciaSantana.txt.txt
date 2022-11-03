@@ -1,0 +1,65 @@
+Laboratorio 2: Paradigma Lógico
+Nombre: Branco García Santana
+Sección: A-1
+Asignatura: Paradigmas de Programación
+
+Lenguaje implementado: SWI-Prolog (64 bits, version 8.4.3)
+
+- Aspecto de distribución de código: en la carpeta Codigo_Fuente_21257371_GarciaSantana se encontrarán los siguientes
+códigos para ejecutar: (con minusculas por la importación de módulos, en formato .pl)
+
+tdapixbit-d_21257371_GarciaSantana -> código con el constructor pixbit-d más selectores
+
+tdapixhex-d_21257371_GarciaSantana -> código con el constructor pixhex-d más selectores 
+
+tdapixrgb-d_21257371_GarciaSantana -> código con el constructor pixrgb-d más selectores.
+
+tdapixeles_21257371_GarciaSantana -> código con selectores, modificadores, entre otros, sin discriminación
+			             al tipo de pixel (o sea para todo tipo) y para pixeles (lista de cada pixel).
+
+requerimientos_funcionales_21257371_GarciaSantana -> código donde se muestran los 19 predicados requeridos
+                                                     (image - constructor, imageFlipH, entre otros).
+
+pruebas_21257371_GarciaSantana -> código correspondiente al script de pruebas, para trabajar con imagenes (en el informe, en anexos
+			          hay algunos ejemplos visuales). Además las pruebas están en comentarios, pudiendo ser consultadas
+				  en el archivo requerimientos_funcionales_21257371_GarciaSantana.
+
+archivo_emergencia_21257371_GarciaSantana -> se creó este archivo donde están todos los predicados de los 6 archivos (en caso
+					     que falle la importación de estos, aunque constantemente se verificó que los archivos
+					     y la importación funciona). Se recomienda ignorar este archivo en caso de no haber
+					     complicaciones.
+
+- NOTA: Se sugiere primero ver la estructura de los pixeles (constructores pixbit-d pixhex-d pixrgb-d) para comprender los predicados
+de mejor forma; además de la estructura de la imagen (image), la cual está en el archivo de los predicados requeridos
+
+- Aspectos de ejecución:
+
+Para la ejecución del código al construir y aplicar predicados con una imagen, se pueden consultar más de un predicado,
+siempre y cuando se asocie una variable a los pixeles primero y se construya con el TDA image, con el ancho y largo de la imagen,
+donde los pixeles están en formato lista (entre [])
+- ejemplo: pixbit( 0, 0, 1, 10, PA), pixbit( 0, 1, 0, 20, PB), pixbit( 1, 0, 0, 30, PC),
+           pixbit( 1, 1, 1, 4, PD), image( 2, 2, [PA, PB, PC, PD], I).
+
+Aunque, respecto a consultas con más de un predicado, se encuentran las siguientes restricciones: 
+
+Entre ellas, las imágenes trabajadas con el predicado "imageToString” no pueden entrar al dominio del resto de predicados
+requeridos (al tratarse de un string), lo mismo pasa con el predicado "imageToHistogram", ya que la variable que prolog
+le da valor mediante unificación es una lista sin formato de imagen.
+
+Respecto a depthLayers, si se quiere trabajar con una de las imágenes de la lista, hay que acceder
+a estas enlistando las variables, teniendo en cuenta la cantidad de imagenes en la lista.
+- ejemplo: ..., imageDepthLayers(I,[I1,I2,I3]), imageFlipH(I1, I1flipH).
+
+Y al querer trabajar con imágenes comprimidas, se retornará false en la mayoría de los predicados,
+excepto en imageDecompress (que la descomprime).
+
+(siempre que se respete el dominio del predicado, se tendrá la consulta deseada)
+
+Importante (aspectos de implementación):
+- Las imágenes trabajadas deben tener al menos 1 pixel o más.
+- Los ejes de los pixeles se trabajaron de la misma forma del laboratorio 1, las coordenadas están en forma matricial,
+donde x es vertical (inicia en 0 y llega hasta el largo - 1), e y es horizontal (inicia en 0 y termina hasta ancho - 1).
+- También se debe ser coherente con el ancho y largo de la imagen respecto a la cantidad y coordenadas de pixeles
+que conformen estas (una imagen de 2x2 debe tener si o si 4 pixeles en las coordenadas (0,0) (0,1) (1,0) (1,1).
+- Los pixeles pixhex tienen color en formato string.
+- Los canales de color de los pixeles pixrgb se encuentran en formato lista [R,G,B]
