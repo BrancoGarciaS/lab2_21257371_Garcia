@@ -3,7 +3,7 @@ Nombre: Branco García Santana
 Sección: A-1
 Asignatura: Paradigmas de Programación
 
-Autoevaluación de requerimientos funcionales y no funcionales:
+Autoevaluación de requerimientos no funcionales y predicados requeridos:
 
 Requerimientos No Funcionales:
 1. Autoevaluación -> 1	: Realizada en este archivo
@@ -14,29 +14,29 @@ Requerimientos No Funcionales:
 			  tipo de recursión usada (en el caso de utilizarla)
 6. Organización -> 1	: Se estructuró códigos en archivos independientes, uno con los TDAs de los pixeles (general) con
 			  predicados selectores, modificadores y de otras operaciones; más el archivo
-			  con los predicados principales de requerimientos funcionales y TDA image (selectores generales
+			  con los predicados principales de requerimientos y TDA image (selectores generales
                           para imagen), además de tener otros archivos para específicamente el TDA pixbit,
                           otro para pixrgb, otro para pixhex; y un archivo con comentarios de pruebas.	
 
-			  Respecto al archivo de requerimientos funcionales, se dejaron predicados se utilizaron EXCLUSIVAMENTE
+			  Respecto al archivo de requerimientos, se dejaron predicados se utilizaron EXCLUSIVAMENTE
 			  para un requerimiento específico, como rotXY para rotar un pixel en imageRotate90, con el fin
 			  de poder documentarlo como meta secundaria y expresar de forma directa la idea de la meta principal
 			  (requerimiento).
 7. Historial -> 1	: Se hizo un trabajo constante en Github durante las semanas anteriores a la entrega
 			  (se estuvo trabajando en un solo archivo llamado "main.pl", luego se separó)
-8. Script de pruebas -> 1: En el archivo pruebas_21257371_GarciaSantana
+8. Script de pruebas -> 1: En el archivo pruebas_21257371_garciasantana
 9. Prerrequisitos -> 1
 
-Requerimientos Funcionales: (en archivo requerimientos_21257371_GarciaSantana.pl)
+Predicados requeridos: (en archivo requerimientos_tdaimage_21257371_garciasantana.pl)
 
 1. TDAs -> 1		: Están definidos en los archivos TDA_pixel, TDA_pixbit-d, TDA pixhex-d, TDA pixrgb-d. Entre los TDAs
 			  se encuentran constructores, predicados de pertenencia, selectores,
 			  y otros predicados tanto de pixeles como de imagen (excepto el constructor de esta)
 2. image -> 1		: Este predicado con los mencionados más abajo, van en el archivo de requerimientos
-3. imageIsBitmap -> 1
-4. imageIsPixmap -> 1
-5. imageIsHexmap -> 1
-6. imageIsCompressed -> 1
+3. imageIsBitmap -> 1   : retorna la estructura de la imagen en caso de ser verdadero
+4. imageIsPixmap -> 1   : retorna la estructura de la imagen en caso de ser verdadero
+5. imageIsHexmap -> 1   : retorna la estructura de la imagen en caso de ser verdadero
+6. imageIsCompressed -> 1 : retorna la estructura de la imagen en caso de ser verdadero
 7. imageFlipH -> 1
 8. imageFlipV -> 1
 9. imageCrop -> 1		: Este predicado no trabaja con números negativos de entrada (x1 y1 x2 y2) ni números fuera del

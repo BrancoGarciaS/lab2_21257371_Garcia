@@ -1,4 +1,4 @@
-:- use_module(requerimientos_funcionales_21257371_garciasantana).
+:- use_module(requerimientos_tdaimage_21257371_garciasantana).
 :- use_module(tdapixeles_21257371_garciasantana).
 :- use_module(tdapixhex_21257371_garciasantana).
 :- use_module(tdapixrgb_21257371_garciasantana).
@@ -6,6 +6,11 @@
 :- use_module(tdaimage_21257371_garciasantana).
 
 % SCRIPT DE PRUEBAS
+% Branco García Santana - 21257371-K - Laboratorio 2
+% Consideraciones: terminar respuestas con punto,
+%                  en caso de aparecer barras de este estilo: |    |
+%                  se sugiere borrar una vez y se desaparecen, luego
+%                  agregar .
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SCRIPT DE PRUEBAS
@@ -140,11 +145,11 @@ image( 2, 2, [P1, P2, P3, P4], I1), pixrgb( 0, 1, 54, 54, 54, 20, P2_modificado)
 imageChangePixel(I1, P2_modificado, I2).
 
 % Se construye imagen de 2x2 con los primeros 2 pixeles con profundidad 10
-% y los otros 2 con profundidad de 30, entonces al consultar “imageDepthLayers”
+% y los otros 2 con profundidad de 30, entonces al consultar "imageDepthLayers"
 % se debería obtener una lista con dos imágenes.
 pixrgb( 0, 0, 33, 33, 33, 10, PA), pixrgb( 0, 1, 44, 44, 44, 10, PB),
 pixrgb( 1, 0, 55, 55, 55, 30, PC), pixrgb( 1, 1, 66, 66, 66, 30, PD),
-image( 2, 2, [PA, PB, PC, PD], I), imageDepthLayers (I, [PRIMERA, SEGUNDA]),
+image( 2, 2, [PA, PB, PC, PD], I), imageDepthLayers(I, [PRIMERA, SEGUNDA]),
 pixrgb( 0, 0, 33, 33, 33, 10, PA2), pixrgb( 0, 1, 44, 44, 44, 10, PB2),
 pixrgb( 1, 0, 255, 255, 255, 10, PC2), pixrgb( 1, 1, 255, 255, 255, 10, PD2),
 image( 2, 2, [PA2, PB2, PC2, PD2], I2), pixrgb( 0, 0, 255, 255, 255, 30, PA3),
@@ -348,7 +353,7 @@ pixrgb( 0, 2, 251, 123, 113, 35, P3), pixrgb( 1, 0, 129, 235, 197, 80, P4),
 pixrgb( 1, 1, 219, 249, 238, 80, P5), pixrgb( 1, 2, 129, 235, 197, 80, P6),
 image( 3, 2, [P1, P2, P3, P4, P5, P6], I2), imageRotate90(I2, I2_rot90).
 
-% La imagen 3 pasa a ser de
+% La imagen 3 sigue siendo de 3x3 pero los pixeles alteraron su orden
 pixhex( 0, 0, "#7DC8D5", 10, P1), pixhex( 0, 1, "#0070C0", 20, P2),
 pixhex( 0, 2, "#3B3838", 30, P3), pixhex( 1, 0, "#E7F771", 10, P4),
 pixhex( 1, 1, "#F4B183", 10, P5), pixhex( 1, 2, "#F6B048", 20, P6),
@@ -392,7 +397,7 @@ pixrgb( 1, 1, 219, 249, 238, 80, P5), pixrgb( 1, 2, 129, 235, 197, 80, P6),
 image( 3, 2, [P1, P2, P3, P4, P5, P6], I2), pixrgb( 0, 1, 255, 255, 0, 35, P2_new),
 imageChangePixel(I2,P2_new,I2_new).
 
-% La imagen 3 pasa a tener el color "#C643EF" en el centro
+% La imagen 3 pasa a tener el color "#C643EF" en el centro x=1 y=1
 pixhex( 0, 0, "#7DC8D5", 10, P1), pixhex( 0, 1, "#0070C0", 20, P2),
 pixhex( 0, 2, "#3B3838", 30, P3), pixhex( 1, 0, "#E7F771", 10, P4),
 pixhex( 1, 1, "#F4B183", 10, P5), pixhex( 1, 2, "#F6B048", 20, P6),
@@ -426,18 +431,18 @@ pixbit( 1, 0, 0, 15, P4), pixbit( 1, 1, 1, 75, P5), pixbit( 1, 2, 0, 15, P6),
 image( 3, 2, [P1, P2, P3, P4, P5, P6], I1), imageInvertColorRGB( P3, P3_invert).
 % -------
 % imageToString
-% La imagen 1 pasa a tener 4 pixeles con color bit 0
+% Representación string imagen 1
 pixbit( 0, 0, 1, 15, P1), pixbit( 0, 1, 0, 75, P2), pixbit( 0, 2, 1, 15, P3),
 pixbit( 1, 0, 0, 15, P4), pixbit( 1, 1, 1, 75, P5), pixbit( 1, 2, 0, 15, P6),
 image( 3, 2, [P1, P2, P3, P4, P5, P6], I1), imageToString(I1, Str1), write(Str1).
 
-% La imagen 2 pasa a tener un amarillo en la coordenada x = 0, y = 1
+% Representación string imagen 2
 pixrgb( 0, 0, 251, 123, 113, 35, P1), pixrgb( 0, 1, 245, 234, 89, 80, P2),
 pixrgb( 0, 2, 251, 123, 113, 35, P3), pixrgb( 1, 0, 129, 235, 197, 80, P4),
 pixrgb( 1, 1, 219, 249, 238, 80, P5), pixrgb( 1, 2, 129, 235, 197, 80, P6),
 image( 3, 2, [P1, P2, P3, P4, P5, P6], I2), imageToString(I2, Str2), write(Str2).
 
-% La imagen 3 pasa a tener el color "#C643EF" en el centro
+% Representación string imagen 3
 pixhex( 0, 0, "#7DC8D5", 10, P1), pixhex( 0, 1, "#0070C0", 20, P2),
 pixhex( 0, 2, "#3B3838", 30, P3), pixhex( 1, 0, "#E7F771", 10, P4),
 pixhex( 1, 1, "#F4B183", 10, P5), pixhex( 1, 2, "#F6B048", 20, P6),
@@ -488,6 +493,17 @@ image( 3, 3, [P1, P2, P3, P4, P5, P6, P7, P8, P9], I3),
 imageCompress(I3, I3_comp), imageDecompress(I3_comp, I3_descomp).
 
 */
+
+
+
+
+
+
+
+
+
+
+
 
 
 

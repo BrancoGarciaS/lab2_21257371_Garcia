@@ -1,0 +1,6 @@
+Laboratorio 2: Paradigma Lógico
+Nombre: Branco García Santana
+Sección: A-1
+Asignatura: Paradigmas de Programación
+
+Enlace repositorio privado en GitHub: https://github.com/BrancoGarciaS/lab2_21257371_Garcia.git

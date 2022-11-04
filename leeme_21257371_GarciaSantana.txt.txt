@@ -8,23 +8,30 @@ Lenguaje implementado: SWI-Prolog (64 bits, version 8.4.3)
 - Aspecto de distribución de código: en la carpeta Codigo_Fuente_21257371_GarciaSantana se encontrarán los siguientes
 códigos para ejecutar: (con minusculas por la importación de módulos, en formato .pl)
 
-tdapixbit-d_21257371_GarciaSantana -> código con el constructor pixbit-d más selectores
+tdapixbit-d_21257371_garciasantana -> código con el constructor pixbit-d más selectores
 
-tdapixhex-d_21257371_GarciaSantana -> código con el constructor pixhex-d más selectores 
+tdapixhex-d_21257371_garciasantana -> código con el constructor pixhex-d más selectores 
 
-tdapixrgb-d_21257371_GarciaSantana -> código con el constructor pixrgb-d más selectores.
+tdapixrgb-d_21257371_garciasantana -> código con el constructor pixrgb-d más selectores.
 
-tdapixeles_21257371_GarciaSantana -> código con selectores, modificadores, entre otros, sin discriminación
+tdapixeles_21257371_garciasantana -> código con selectores, modificadores, entre otros, sin discriminación
 			             al tipo de pixel (o sea para todo tipo) y para pixeles (lista de cada pixel).
 
-requerimientos_funcionales_21257371_GarciaSantana -> código donde se muestran los 19 predicados requeridos
+tdaimage_21257371_garciasantana -> código con selectores generales del tda image
+
+requerimientos_tdaimage_21257371_garciasantana -> código donde se muestran los 19 predicados requeridos
                                                      (image - constructor, imageFlipH, entre otros).
+                                                     Nota: se dejaron predicados se utilizaron EXCLUSIVAMENTE
+			                             para un requerimiento específico, como rotXY para rotar un pixel
+                                                     en imageRotate90, con el fin de poder documentarlo como meta secundaria
+                                                     y expresar de forma directa la idea de la meta principal
+			                             (requerimiento).
 
-pruebas_21257371_GarciaSantana -> código correspondiente al script de pruebas, para trabajar con imagenes (en el informe, en anexos
+pruebas_21257371_garciasantana -> código correspondiente al script de pruebas, para trabajar con imagenes (en el informe, en anexos
 			          hay algunos ejemplos visuales). Además las pruebas están en comentarios, pudiendo ser consultadas
-				  en el archivo requerimientos_funcionales_21257371_GarciaSantana.
+				  también en el archivo requerimientos_21257371_GarciaSantana.
 
-archivo_emergencia_21257371_GarciaSantana -> se creó este archivo donde están todos los predicados de los 6 archivos (en caso
+archivo_emergencia_21257371_garciasantana -> se creó este archivo donde están todos los predicados de los 6 archivos (en caso
 					     que falle la importación de estos, aunque constantemente se verificó que los archivos
 					     y la importación funciona). Se recomienda ignorar este archivo en caso de no haber
 					     complicaciones.
@@ -60,6 +67,8 @@ Importante (aspectos de implementación):
 - Los ejes de los pixeles se trabajaron de la misma forma del laboratorio 1, las coordenadas están en forma matricial,
 donde x es vertical (inicia en 0 y llega hasta el largo - 1), e y es horizontal (inicia en 0 y termina hasta ancho - 1).
 - También se debe ser coherente con el ancho y largo de la imagen respecto a la cantidad y coordenadas de pixeles
-que conformen estas (una imagen de 2x2 debe tener si o si 4 pixeles en las coordenadas (0,0) (0,1) (1,0) (1,1).
+que conformen estas (una imagen de 2x2 debe tener si o si 4 pixeles en las coordenadas (0,0) (0,1) (1,0) (1,1)).
 - Los pixeles pixhex tienen color en formato string.
 - Los canales de color de los pixeles pixrgb se encuentran en formato lista [R,G,B]
+- Para predicados de pertenencia como imageIsBitmap, imageIsHexmap, imageIsPixmap, imageIsCompressed al retornar
+la estructura de la imagen, significa que se retornó un true

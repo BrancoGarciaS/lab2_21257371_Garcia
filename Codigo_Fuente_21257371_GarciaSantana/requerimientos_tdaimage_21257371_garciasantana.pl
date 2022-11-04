@@ -1,4 +1,4 @@
-:- module(requerimientos_funcionales_21257371_garciasantana,[image/4, imageIsBitmap/1,
+:- module(requerimientos_tdaimage_21257371_garciasantana,[image/4, imageIsBitmap/1,
           imageIsPixmap/1, imageIsHexmap/1,imageIsCompressed/1,imageFlipH/2,invert_H/3,
           invY/3,imageFlipV/2,invert_V/3,invX/3,imageCrop/6,ordenX1X2Y1Y2/8,
           recortarpixs/8,entrex1x2y1y2/5,imageRGBToHex/2, pixsToHex/2, conv_a_hex/2,
@@ -18,12 +18,84 @@
 
 % Predicados Requeridos
 
+% Dominio:
+%   A: ancho imagen (entero), L: alto imagen (entero), P: pixeles imagen (lista),
+%   I: imagen, Pixel, IH: imagen invertida horizontalmente
+%   PixH: pixel invertido horizontal, PH: pixeles invertidos horizontalmente,
+%   IV: imagen invertida verticalmente, PixV: pixel invertido vertical,
+%   PV: pixeles invertidos verticalmente,
+%   X1,X2,Y1,Y2: coordenadas de recorte(enteros), IC: imagen recortada,
+%   X_1,X_2,Y_1,Y_2: parametros de recorte ordenados(x1<x2) (enteros),
+%   X0: marcador de posición en x (entero), Y0: marcador posición y (entero),
+%   PC: pixeles recortados, IHex: imagen convertida a hexadecimal,
+%   DD: digito decimal (entero), DH: digito hexadecimal (string),
+%   C: canal RGB, CH: canal RGB a hexadecimal, Pixhex: pixel hexadecimal,
+%   PHex: pixeles en hexadecimal, Histograma: lista con repeticiones de color
+%   Color (entero, string o lista), Rep: repeticiones (entero),
+%   Rest: pixeles que no cumplen condición (resto-lista),
+%   Irot: imagen rotada 90 grados a la derecha, PixRot: pixel rotado 90 grados,
+%   PRot90: pixeles rotados 90 grados a la derecha, Icomp: imagen comprimida,
+%   MaxRef: color más repetido de referencia,
+%   Cmax: color más repetido del histograma,
+%   Caux: auxiliar para obtener el color más repetido
+%   Pos: marcador de posición (entero), Conserv: pixeles no comprimidos (list)
+%   Pcomp: información pixeles comprimidos (list), PixNew: pixel nuevo,
+%   IN: imagen con pixel nuevo sustituido, PNew: pixeles con pix nuevo incluido
+%   PixInv: pixel RGB invertido, Str: string representativo de colores de imagen
+%   LimY: limite en Y de la imagen (entero), StrIni: string inicial "",
+%   Cstr: color de pixel en formato string, Depth: profundidad pixel (entero),
+%   LI: conjunto de imagenes de DepthLayers (Lista de imagenes), PixelBlanco,
+%   PD: pixeles de la misma profundidad, PixRef: pixel de referencia
+%   Pajust: pixeles ajustados, IDesc: imagen descomprimida
+%   Pdesc: pixeles descomprimidos
+
+% - Predicados: % Reglas:
+% image(A,L,P,I), imageIsBitmap(I), imageIsPixmap(I),
+% imageIsHexmap(I), imageIsCompressed(I),
+% imageFlipH(I, IH) -> invY(Pixel, A, PixH), invertH(P, A, PH)
+% imageFlipV(I, IV) -> invX(Pixel, L, PixV), invertV(P, l, PV)
+% imageCrop(I, X1, X2, Y1, Y2, IC) -> ordenX1X2Y1Y2(X1,X2,Y1,Y2,X_1,X_2,Y_1,Y_2)
+%                                     entrex1x2y1y2(Pixel,X1,X2,Y1,Y2)
+%                                     recortarpixs(P,X1,X2,Y1,Y2,X0,Y0,PC)
+% imageRGBToHex(I, IHex) -> hexa(DD,DH), canal_a_hex(C, CH),
+%                           conv_a_hex(Pixel,Pixhex), pixsToHex(P, PHex)
+% imageToHistogram(I, Histograma) -> mismocolor(Pixel, Color, Rep, Rest),
+%                                    contarcolores(P,Histograma)
+% imageRotate90(I, Irot) -> rotXY(Pixel, L, PixRot), rot90(P, L, PRot90).
+% imageCompress(I, Icomp) -> maxcolor(Histograma,MaxRef,Cmax,Caux),
+%                            comprimir(P, Cmax, Pos, Conserv, Pcomp)
+% imageChangePixel(I, PixNew, IN) -> esCompatible(I, PixNew),
+%                                    reemplazarPix(P,PixNew,PNew)
+% imageInvertColorRGB(Pixel, PixInv)
+% imageToString(I, Str) -> a_string(P,LimY,StrIni,Str), colorString(C,D,Cstr).
+% imageDepthLayers(I,LI) -> iterar(X0,Y0,limY,Xsgte,Ysgte),
+%                        whitePixel(Pixel, X0, Y0, PixelBlanco),
+%                        buscarD(P,D,PD,Rest),
+%                        ajustarPixsD(PD,X0,Y0,LimX,LimY,PixRef,Pajust),
+%                        mismaprof(P,A,L,LI).
+% imageDecompress(I, IDesc) -> descomprime(Pcomp, Cmax, A, Pdesc),
+%                              recuperarPixs(P, Pos, A, Pdesc).
+
+% Metas:
+% - Primarias:
+% imageFlipH, imageFlipV, imageCrop, imageRGBToHex, imageRotate90,
+% imageCompress, imageChangePixel, imageInvertColorRGB, imageToString,
+% imageDepthLayers, imageDecompress
+
+% - Secundarias: image, imageIsBitmap, imageIsPixmap, imageIsHexmap,
+% imageIsCompressed, invY, invertH, invX, invertV, ordenX1X2Y1Y2,
+% entrex1x2y1y2, recortarpixs, hexa, canal_a_hex, conv_a_hex, pixsToHex
+% imageToHistogram, mismocolor, contarcolores, rotXY, rot90, maxcolor,
+% comprimir, esCompatible, reemplazarPix, a_string, colorString, iterar,
+% whitePixel, buscarD, ajustarPixsD, mismaprof, descomprime, recuperarPixs
+
 % ############################################################################## %
 
 % Requerimiento 2:
 image(Ancho, Alto, Pixeles, [Ancho,Alto,Pixs]):- % Predicado constructor
     % Dominio: Ancho (de la imagen), Alto(de la imagen),
     %          Pixeles (de la imagen), Imagen (lista de ancho, alto, pixeles)
+    % Descripción: predicado para construir una representación de imagen
     % Goals: image, construir una imagen
     % Aridad: 4
     % Tipo de predicado: regla
@@ -37,9 +109,11 @@ image(Ancho, Alto, Pixeles, [Ancho,Alto,Pixs]):- % Predicado constructor
 % Requerimiento 3:
 imageIsBitmap(I):- % Predicado de pertenencia
     % Dominio: Imagen (I)
+    % Descripción: predicado para ver si una imagen es bitmap
     % Goals: imageIsBitmap, predicado para indicar si una imagen es bitmap
     %       (en ese caso, se entrega la estructura de esta) y
     %        no lo es muestra false
+    % Recorrido: true (si la imagen es bitmap), false (si no lo es)
     % Aridad: 1
     % Tipo de predicado: regla
     image(_,_,Pixeles, I), % Obtengo los pixeles de la imagen
@@ -52,9 +126,11 @@ imageIsBitmap(I):- % Predicado de pertenencia
 % Requerimiento 4:
 imageIsPixmap(I):- % Predicado de pertenencia
     % Dominio: Imagen (I)
+    % Descripción: predicado para ver si una imagen es pixmap
     % Goals: imageIsPixmap, predicado para indicar si una imagen es pixmap
     %       (en ese caso, se entrega la estructura de esta) y
     %        si no lo es se muestra un false
+    % Recorrido: true (si la imagen es pixmap), false (si no lo es)
     % Aridad: 1
     % Tipo de predicado: regla
     image(_,_,Pixeles, I), % Obtengo los pixeles de la imagen
@@ -66,9 +142,11 @@ imageIsPixmap(I):- % Predicado de pertenencia
 % Requerimiento 5:
 imageIsHexmap(I):- % Predicado de pertenencia
     % Dominio: Imagen (I)
+    % Descripción: predicado para ver si una imagen es hexmap
     % Goals: imageIsHexmap, predicado para indicar si una imagen es hexmap
     %       (en ese caso, se entrega la estructura de esta) y
     %        si no lo es se muestra un false
+    % Recorrido: true (si la imagen es hexmap), false (si no lo es)
     % Aridad: 1
     % Tipo de predicado: regla
     image(_,_,Pixeles,I), % Obtengo los pixeles de la imagen
@@ -80,9 +158,11 @@ imageIsHexmap(I):- % Predicado de pertenencia
 % Requerimiento 6:
 imageIsCompressed(I):- % Predicado de pertenencia
     % Dominio: Imagen (I)
+    % Descripción: predicado para ver si una imagen está comprimida
     % Goals: imageIsCompressed, predicado para indicar si una imagen está
     %        comprimida (en ese caso, se entrega la estructura de la imagen
     %        comprimida) y si no lo está se muestra un false
+    % Recorrido: true (si la imagen está comprimida), false (si no lo está)
     % Aridad: 1
     % Tipo de predicado: regla
     % - La estructura para una imagen comprimida tiene la siguiente forma:
@@ -103,13 +183,14 @@ imageIsCompressed(I):- % Predicado de pertenencia
 - Dominio:
 I1: imagen a operar
 I2: imagen invertida horizontalmente
+- Descripción: predicado para entregar una representación de la inversión
+horizontal de una imagen
 - Predicados:
 imageFlipH(I1,I2).
 invY([X,Y,C,D], Largo, [X,Yh,C,D]). Y: y invertido horizontalmente
 invert_H(P,L,Pixs_H). P: pixs, L: largo, Pixs_H: pixs invertidos
 horizontalmente
-- Meta principal: imageFlipH, predicado para voltear
-horizontalmente una imagen
+- Descripción: predicado para voltear horizontalmente una imagen
 - Aridad: 2
 - Tipo de predicado: regla
 - Estrategia: primero se trabaja con un pixel, luego con el resto de
@@ -129,11 +210,23 @@ imageFlipH(I1,I2):- % Predicado modificador
     % Creo otra imagen con los pixeles invertidos horizontalmente
     image(A,L,Pixs_H,I2), !.
 % ---------------
+invY(Pixel, Ancho, [X,Yh,C,D]):-
+    % - Dominio: Pixel (Entrada), Ancho imagen, Pixel volteado (Salida)
+    % - Descripción: predicado para invertir horizontalmente un solo pixel
+    % - Goals: invY, invertir horizontalmente un pixel (Y es horizontal)
+    % - Aridad: 3
+    % - Tipo de predicado: regla (modificador de pixel)
+    % Obtengo la información del pixel
+    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
+    % y_invertido = (ancho - 1) - y_pixel_a_invertir
+    Yh is Ancho - 1 - Y.
+% ---------------
 % Clausulas para invertir horizontalmente todos los pixeles:
 % - Dominio: Pixeles, Ancho, PixelesInvertidos (lista)
+% - Descripción: predicado para invertir horizontalmente todos los pixeles
 % - Goals: invert_H, invertir horizontalmente una lista de pixeles
 % - Aridad: 3
-% - Tipo de predicado: regla
+% - Tipo de predicado: regla (modificador de pixeles)
 % - Tipo de recursión: natural, ya que hay estados en espera mientras se
 % va construyendo la lista de pixeles invertidos
 invert_H([],_,[]):- !. % caso base: si se recorren todos los pixeles,
@@ -147,16 +240,6 @@ invert_H(Pixeles, Ancho, [InvertidoH|RestInv]):-
     % se vuelve a realizar el mismo procedimiento con el resto
     % de pixeles, hasta llegar al hecho caso base.
     invert_H(Rest, Ancho, RestInv).
-% ---------------
-invY(Pixel, Ancho, [X,Yh,C,D]):-
-    % - Dominio: Pixel (Entrada), Ancho imagen, Pixel volteado (Salida)
-    % - Goals: invY, invertir horizontalmente un pixel (Y es horizontal)
-    % - Aridad: 3
-    % - Tipo de predicado: regla
-    % Obtengo la información del pixel
-    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
-    % y_invertido = (ancho - 1) - y_pixel_a_invertir
-    Yh is Ancho - 1 - Y.
 % ------------------------------------------------------------------------------
 % Requerimiento 8:
 
@@ -164,6 +247,8 @@ invY(Pixel, Ancho, [X,Yh,C,D]):-
 - Dominio:
 I1: imagen a operar
 I2: imagen volteada verticalmente
+- Descripción: predicado para entregar una representación de la inversión
+vertical de una imagen
 - Predicados:
 imageFlipV(I1,I2).
 invX([X,Y,C,D], Largo, [Xv,Y,C,D]). Xv: x volteado verticalmente
@@ -171,7 +256,7 @@ invert_V(P,L,Pixs_V). P: pixs, L: largo, Pixs_V: pixs volteados verticalmente
 - Meta Principal: imageFlipV, predicado para invertir verticalmente
 una imagen
 - Aridad: 2
-- Tipo de predicado: regla
+- Tipo de predicado: regla (modificadora)
 - Estrategia: primero se trabaja con un pixel, luego con el resto de
 pixeles y finalmente con la imagen
 - Tipo de Recursión: natural, el predicado para invertir verticalmente
@@ -190,11 +275,23 @@ imageFlipV(I1,I2):- % Predicado modificador
     % Construyo la nueva imagen I2 con los pixeles invertidos verticalmente
     image(A,L,Pixs_V,I2), !.
 % ---------------
+invX(Pixel, Largo, [Xv,Y,C,D]):-
+    % - Dominio: Pixel (Entrada), Largo de imagen, Pixel volteado (Salida)
+    % - Descripción: predicado para invertir verticalmente un pixel
+    % - Goals: invX, invertir verticalmente un pixel (X es vertical)
+    % - Aridad: 3
+    % - Tipo de predicado: regla (modificador)
+    % Selecciono la información del pixel
+    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
+    % x_invertido = (largo - 1) - x_pixel_a_invertir
+    Xv is Largo - 1 - X.
+% ---------------
 % Clausulas para invertir verticalmente todos los pixeles:
 % - Dominio: Pixeles, Largo, PixelesInvertidos (lista)
+% - Descripción: este predicado invierte verticalmente todos los pixeles
 % - Goals: invert_V, invertir verticalmente una lista de pixeles
 % - Aridad: 3
-% - Tipo de predicado: regla
+% - Tipo de predicado: regla (modificador)
 % - Tipo de recursión: natural, ya que hay estados en espera mientras se
 % va construyendo la lista de pixeles invertidos
 invert_V([],_,[]):- !. % caso base: si se recorren todos los pixeles,
@@ -209,16 +306,6 @@ invert_V(Pixeles, Largo, [InvertidoV|RestInv]):-
     % se vuelve a realizar el mismo procedimiento con el resto
     % de pixeles, hasta llegar al hecho caso base.
     invert_V(Rest, Largo, RestInv).
-% ---------------
-invX(Pixel, Largo, [Xv,Y,C,D]):-
-    % - Dominio: Pixel (Entrada), Largo de imagen, Pixel volteado (Salida)
-    % - Goals: invX, invertir verticalmente un pixel (X es vertical)
-    % - Aridad: 3
-    % - Tipo de predicado: regla
-    % Selecciono la información del pixel
-    getX(Pixel,X), getY(Pixel,Y), getColor(Pixel,C), getD(Pixel,D),
-    % x_invertido = (largo - 1) - x_pixel_a_invertir
-    Xv is Largo - 1 - X.
 % ------------------------------------------------------------------------------ %
 % Requerimiento 9:
 /*
@@ -229,6 +316,8 @@ Y1: primer parametro en Y para recortar la imagen (entero)
 X2: segundo parametro en X para recortar la imagen (entero)
 Y2: segundo parametro en Y para recortar la imagen (entero)
 I2: imagen recortada
+- Descripción: predicado para recortar una imagen según un cuadrante
+limitado por los puntos X1 Y1 X2 Y2
 - Predicados:
 imageCrop(I1,X1,Y1,X2,Y2,I2).
 entrex1x2y1y2(Pixel,X1,X2,Y1,Y2).
@@ -236,7 +325,7 @@ recortarpixs(Pixs,X1,X2,Y1,Y2,X0,Y0,PixsCrop).
 - Meta principal: imageCrop, recortar una imagen respecto a 4 puntos
 de corte en x e y
 - Aridad: 6
-- Tipo de predicado: regla
+- Tipo de predicado: regla (modificadora)
 - Estrategia: primero se ordenaron los parametros de corte, luego se
 comprueba si el pixel está posicionado dentro del intervalo de recorte
 - Tipo de Recursión: Natural, ya que predicado recortarPixs deja estados
@@ -267,9 +356,9 @@ imageCrop(I1,X1,Y1,X2,Y2,I2):- % Predicado modificador
 % - Dominio: X1, X2, Y1, Y2 (Parametros de recorte)
 %            X_1, X_2, Y_1, Y_2 (Parametros de recorte ordenados)
 %            donde X_1 < X_2, Y_1 < Y_2
-% - Goals: ordenX1X2Y1Y2, ordenar parametros de recorte
+% - Goals: ordenX1X2Y1Y2, Descripción: ordena parametros de recorte
 % - Aridad: 8
-% - Tipo de predicado: regla
+% - Tipo de predicado: regla (otras operaciones)
 ordenX1X2Y1Y2(X1,X2,Y1,Y2,X1,X2,Y1,Y2):- X1 =< X2, Y1 =< Y2.
 ordenX1X2Y1Y2(X1,X2,Y1,Y2,X2,X1,Y2,Y1):- X1 > X2, Y1 > Y2.
 ordenX1X2Y1Y2(X1,X2,Y1,Y2,X1,X2,Y2,Y1):- X1 =< X2, Y1 > Y2.
@@ -282,10 +371,27 @@ ordenX1X2Y1Y2(X1,X2,Y1,Y2,X2,X1,Y1,Y2):- X1 > X2, Y1 =< Y2.
 %            Y0: marcador (iniciado en 0) de posicion en Y para
 %                ajuste de coordenadas de pixeles no recortados,
 %            PixsCrop: pixeles recortados
-% - Goals: recortar cada pixel fuera de los parametros de recorte
-%          de la lista de pixeles
+% - Goals: entrex1x2y1y2
+% - Descripción: predicado para ver si un pixel está dentro de los
+%                parametros de recorte (intervalo X e Y) y no va a ser
+%                recortado
+% - Aridad: 5
+% - Tipo de predicado: regla (de pertenencia)
+entrex1x2y1y2(Pixel,X1,X2,Y1,Y2):- % Predicado de pertenencia
+    getX(Pixel,X), getY(Pixel,Y),
+    X >= X1, X =< X2, Y >= Y1, Y =< Y2.
+% ---------------
+% Clausulas para recortar lista de pixeles:
+% - Dominio: Pixeles, X1, X2, Y1, Y2 (Parametros de recorte),
+%            X0: marcador (iniciado en 0) de posicion en X para
+%                ajuste de coordenadas de pixeles no recortados,
+%            Y0: marcador (iniciado en 0) de posicion en Y para
+%                ajuste de coordenadas de pixeles no recortados,
+%            PixsCrop: pixeles recortados
+% - Goals y descripción: recortar cada pixel fuera de los
+%                   parametros de recorte de la lista de pixeles
 % - Aridad: 8
-% - Tipo de predicado: regla
+% - Tipo de predicado: regla (modificadora)
 % - Tipo de recursión: natural, ya que mientras se recorta se dejan
 %                      estados en espera (rest2)
 recortarpixs([],_,_,_,_,_,_,[]):-!. % Caso base: cuando se
@@ -335,28 +441,13 @@ recortarpixs(Pixeles,X1,X2,Y1,Y2,X0,Y0,Rest2):-
     pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
     not(entrex1x2y1y2(Pix1,X1,X2,Y1,Y2)),
     recortarpixs(Rest,X1,X2,Y1,Y2,X0,Y0,Rest2).
-% ---------------
-% Clausulas para recortar lista de pixeles:
-% - Dominio: Pixeles, X1, X2, Y1, Y2 (Parametros de recorte),
-%            X0: marcador (iniciado en 0) de posicion en X para
-%                ajuste de coordenadas de pixeles no recortados,
-%            Y0: marcador (iniciado en 0) de posicion en Y para
-%                ajuste de coordenadas de pixeles no recortados,
-%            PixsCrop: pixeles recortados
-% - Goals: entrex1x2y1y2, para ver si un pixel está dentro de los
-%          parametros de recorte (intervalo X e Y) y no va a ser
-%          recortado
-% - Aridad: 5
-% - Tipo de predicado: regla
-entrex1x2y1y2(Pixel,X1,X2,Y1,Y2):- % Predicado de pertenencia
-    getX(Pixel,X), getY(Pixel,Y),
-    X >= X1, X =< X2, Y >= Y1, Y =< Y2.
 % ------------------------------------------------------------------------------ %
 % Requerimiento 10:
 /*
 - Dominio:
 I1: imagen a operar (image pixmap)
 I2: imagen volteada verticalmente
+- Descripción: predicado que convierte una imagen pixmap a hexmap
 - Predicados:
 imageRGBToHex(I1, I2).
 hexa(X, XtoStr).
@@ -384,23 +475,28 @@ imageRGBToHex(I1, I2):- % Tipo: otras operaciones
     % Construyo una nueva imagen I2 con los pixeles en hexadecimal
     image(A,L,PixsHex,I2), !.
 % ---------------
-% - Dominio: Pixeles, PixelesHex
-% - Goals: pixsToHex, convertir a hexadecimal todos los pixeles RGB
+% - Dominio: X Numero decimal (entero), XtoStr Numero hexadecimal (string)
+% - Goals: Convertir el valor de un número decimal a hexadecimal
 % - Aridad: 2
-% - Tipo de predicado: regla
-% - Tipo de recursión: recursión natural, ya que se dejan estados en
-%   espera mientras se va construyendo la lista de pixeles hexadecimales
-pixsToHex([],[]):- !. % Caso base: si se recorren todos los pixeles,
-% convertiendose la lista de salida queda vacía
-pixsToHex(Pixeles, [PixsHex|RestHex]):-
-    % REGLA - para convertir a hexadecimal una lista de pixeles.
-    % Se convierte a hexadecimal el pixel cabecera 'guardandose'
-    % en la cabeza de la lista de pixeles hexadecimales
-    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
-    conv_a_hex(Pix1, PixsHex),
-    % se vuelve a realizar el mismo procedimiento con el resto
-    % de pixeles, hasta llegar al hecho caso base.
-    pixsToHex(Rest, RestHex).
+hexa(X, XtoStr):- % Tipo de predicado: regla
+    % si es menor a 10, se convierte a string
+    X < 10, number_string(X,XtoStr).
+% Tipo de predicado: hecho
+hexa(10,"A").
+hexa(11,"B").
+hexa(12,"C").
+hexa(13,"D").
+hexa(14,"E").
+hexa(15,"F").
+% ---------------
+% - Dominio: Canal rgb (entero), Hexadecimal (string)
+% - Goals: convertir el valor de un canal rgb a notación hexadecimal
+% - Aridad: 2
+canal_a_hex(Canal,Hexadecimal):-
+    % String hexadecimal -> "<resultado: canal//16><resto>"
+    H1 is Canal // 16, H2 is Canal mod 16,
+    hexa(H1,Hexa1), hexa(H2,Hexa2),
+    string_concat(Hexa1,Hexa2,Hexadecimal).
 % ---------------
 % - Dominio: Pixel, Pix_hexa (pixel convertido a hexadecimal)
 % - Goals: conv_a_hex, convertir un pixel a hexadecimal
@@ -420,28 +516,23 @@ conv_a_hex(Pixel,Pix_hexa):-
     % En Pix_hexa queda el pixel convertido
     pixhex(X,Y,Str_hexa,D,Pix_hexa).
 % ---------------
-% - Dominio: Canal rgb (entero), Hexadecimal (string)
-% - Goals: convertir el valor de un canal rgb a notación hexadecimal
+% - Dominio: Pixeles, PixelesHex
+% - Goals: pixsToHex, convertir a hexadecimal todos los pixeles RGB
 % - Aridad: 2
-canal_a_hex(Canal,Hexadecimal):-
-    % String hexadecimal -> "<resultado: canal//16><resto>"
-    H1 is Canal // 16, H2 is Canal mod 16,
-    hexa(H1,Hexa1), hexa(H2,Hexa2),
-    string_concat(Hexa1,Hexa2,Hexadecimal).
-% ---------------
-% - Dominio: X Numero decimal (entero), XtoStr Numero hexadecimal (string)
-% - Goals: Convertir el valor de un número decimal a hexadecimal
-% - Aridad: 2
-hexa(X, XtoStr):- % Tipo de predicado: regla
-    % si es menor a 10, se convierte a string
-    X < 10, number_string(X,XtoStr).
-% Tipo de predicado: hecho
-hexa(10,"A").
-hexa(11,"B").
-hexa(12,"C").
-hexa(13,"D").
-hexa(14,"E").
-hexa(15,"F").
+% - Tipo de predicado: regla
+% - Tipo de recursión: recursión natural, ya que se dejan estados en
+%   espera mientras se va construyendo la lista de pixeles hexadecimales
+pixsToHex([],[]):- !. % Caso base: si se recorren todos los pixeles,
+% convertiendose la lista de salida queda vacía
+pixsToHex(Pixeles, [PixsHex|RestHex]):-
+    % REGLA - para convertir a hexadecimal una lista de pixeles.
+    % Se convierte a hexadecimal el pixel cabecera 'guardandose'
+    % en la cabeza de la lista de pixeles hexadecimales
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
+    conv_a_hex(Pix1, PixsHex),
+    % se vuelve a realizar el mismo procedimiento con el resto
+    % de pixeles, hasta llegar al hecho caso base.
+    pixsToHex(Rest, RestHex).
 % ------------------------------------------------------------------------------ %
 % Requerimiento 11:
 /*
@@ -450,12 +541,13 @@ I1: imagen a operar
 Histograma
 - Metas: imageToHistogram, mostrar el histograma (frecuencias de color) de
 una imagen
+- Descripción: calcula la frecuencias de color de una imagen
 - Predicados:
 imageToHistogram(I,Histograma).
 mismocolor(Pixeles,Color,Repeticion,[Pix1|Rest2]).
 contarcolores(Pixeles,[[Color,Repeticion]|Cola]).
 - Aridad: 2
-- Tipo de predicado: regla
+- Tipo de predicado: regla (otras operaciones)
 - Recursión utilizada: natural(para contar las repeticiones de un color)
 - Estrategia: primero cuento un color, luego el resto de colores
 */
@@ -466,6 +558,24 @@ imageToHistogram(I,Histograma):- % Tipo: Otras operaciones
     getPixeles(I,Pixeles),
     % Se cuentan los colores de los pixeles obteniendose el histograma
     contarcolores(Pixeles,Histograma), !.
+% ---------------
+% - Dominio: Pixel X Color X Repeticion X Pixeles restantes (de otro color)
+% - Goals: contar un color especifico en la lista de pixeles
+% - Aridad: 4
+mismocolor([],_,0,[]):- !. % caso base: la repeticion inicia en 0
+mismocolor([[_,_,Color,_]|Rest],Color,Repeticion, Rest2):- !,
+    % - Tipo de predicado: regla
+    % Caso donde el pixel analizado coincide con el color a contar.
+    % A traves de recursion natural, se deja un estado en espera, el cual
+    % es el valor de Repeticion1 que almacenará las Repeticiones, llegando
+    % al caso base que es cuando vale 0 (de ahí se devuelve e irá sumando)
+    mismocolor(Rest,Color,Repeticion1,Rest2),
+    Repeticion is Repeticion1 + 1.
+mismocolor([Pix1|Rest],Color,Repeticion,[Pix1|Rest2]):-
+    % - Tipo de predicado: regla
+    % Caso donde el color del pixel no coincida con el color buscado.
+    % No se altera la cantidad de Repeticiones
+    mismocolor(Rest,Color,Repeticion,Rest2).
 % ---------------
 % - Dominio: Pixeles, Histograma ([[Color1,Repeticion], ....])
 % - Goals: contarcolores, contar todos los colores de la lista
@@ -486,24 +596,6 @@ contarcolores(Pixeles,[[Color,Repeticion]|Cola]):-
     % Se vuelve a realizar la llamada recursiva, pero con los
     % pixeles restantes que no tienen el color contado
     contarcolores(PixsRest,Cola).
-% ---------------
-% - Dominio: Pixel X Color X Repeticion X Pixeles restantes (de otro color)
-% - Goals: contar un color especifico en la lista de pixeles
-% - Aridad: 4
-mismocolor([],_,0,[]):- !. % caso base: la repeticion inicia en 0
-mismocolor([[_,_,Color,_]|Rest],Color,Repeticion, Rest2):- !,
-    % - Tipo de predicado: regla
-    % Caso donde el pixel analizado coincide con el color a contar.
-    % A traves de recursion natural, se deja un estado en espera, el cual
-    % es el valor de Repeticion1 que almacenará las Repeticiones, llegando
-    % al caso base que es cuando vale 0 (de ahí se devuelve e irá sumando)
-    mismocolor(Rest,Color,Repeticion1,Rest2),
-    Repeticion is Repeticion1 + 1.
-mismocolor([Pix1|Rest],Color,Repeticion,[Pix1|Rest2]):-
-    % - Tipo de predicado: regla
-    % Caso donde el color del pixel no coincida con el color buscado.
-    % No se altera la cantidad de Repeticiones
-    mismocolor(Rest,Color,Repeticion,Rest2).
 % ------------------------------------------------------------------------------ %
 % Requerimiento 12:
 /*
@@ -511,12 +603,13 @@ mismocolor([Pix1|Rest],Color,Repeticion,[Pix1|Rest2]):-
 I1: imagen a operar
 I2: imagen volteada verticalmente
 - Metas: imageRotate90, rotar 90 grados a la derecha una imagen
+- Descripción: predicado que se usa para rotar 90 grados una imagen a la derecha
 - Predicados:
 imageRotate90(I1,I2).
 rotXY([X,Y,C,D], Largo, [X,Yrot,C,D]). Yrot: Y rotado 90 grados a la derecha
 rot90(P,L,Pixs_Rot). P: pixs, L: largo, Pixs_V: pixs rotados 90° a la derecha
 - Aridad: 2
-- Tipo de predicado: regla
+- Tipo de predicado: regla (modificador)
 - Recursión utilizada: natural (para rotar todos los pixeles)
 - Estrategia: primero creo predicado para rotar un pixel, luego otro
 para rotar todo el resto de la lista de pixeles
@@ -532,20 +625,6 @@ imageRotate90(I1,I2):- % Predicado modificador
     % se invierten (Ancho y Alto) en la nueva imagen I2
     image(L,A,Pixs_Rot,I2), !.
 % ---------------
-% - Dominio: Pixeles, Largo, Pixeles rotados 90 grados
-% - Goals: rot90, para rotar 90° todos los pixeles de una lista
-% - Aridad: 3
-% - Tipo de predicado: regla
-rot90([],_,[]):- !. % Caso base: cuando se recorren todos los pixeles
-% rotandose cada uno 90 grados.
-rot90(Pixeles, Largo, [Pix1_2|Rest2]):-
-    % Obtengo primer y resto de pixeles
-    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
-    % Se rota el pixel cabecera y se incluye en la lista de pixeles rotados
-    rotXY(Pix1, Largo, Pix1_2),
-    % Se realiza el mismo procedimiento con el resto de pixeles
-    rot90(Rest, Largo, Rest2).
-% ---------------
 % - Dominio: Pixel, Largo, Pixeles Rotados
 % - Goals: rotXY, para rotar 90° a la derecha un pixel
 % - Aridad: 3
@@ -557,12 +636,30 @@ rotXY(Pixel, Largo, [Y,Yrot,C,D]):-
     % (x_original, y _original) -> (y_original, largo - 1 - x_original)
     % el resto de información se conserva
     Yrot is Largo - 1 - X.
+% ---------------
+% - Dominio: Pixeles, Largo, Pixeles rotados 90 grados
+% - Goals: rot90, para rotar 90° todos los pixeles de una lista
+% - Aridad: 3
+% - Tipo de predicado: regla
+% - Tipo de recursión: natural, ya que mientras se construye la lista
+% de pixeles rotados, la cola está en espera
+rot90([],_,[]):- !. % Caso base: cuando se recorren todos los pixeles
+% rotandose cada uno 90 grados.
+rot90(Pixeles, Largo, [Pix1_2|Rest2]):-
+    % Obtengo primer y resto de pixeles
+    pix1(Pixeles,Pix1), restPixs(Pixeles,Rest),
+    % Se rota el pixel cabecera y se incluye en la lista de pixeles rotados
+    rotXY(Pix1, Largo, Pix1_2),
+    % Se realiza el mismo procedimiento con el resto de pixeles
+    rot90(Rest, Largo, Rest2).
 % ------------------------------------------------------------------------------ %
 % Requerimiento 13:
 /*
 - Dominio:
 I1: imagen a operar
 I2: imagen comprimida
+- Descripción: predicado para entregar la representación de la imagen comprimida
+con sintesis de información respecto a la original
 - Metas: imageCompress, comprimir una imagen
 - Predicados:
 imageCompress(I1,I2).
@@ -573,7 +670,7 @@ comprimir(Pixeles, C, Pos, Conserv, Comprimidos).
 	Pos: inicia en 0, Conserv: pixeles conservados,
     Comprimidos: información pixeles comprimidos.
 - Aridad: 2
-- Tipo de predicado: regla
+- Tipo de predicado: regla (otras operaciones)
 - Recursión utilizada: natural (para comprimir los pixeles)
 - Estrategia: primero creo predicado para hallar el color más frecuente
 del histograma, luego creo otro para comprimir los pixeles en base a ese color
@@ -650,6 +747,7 @@ NewPixel: pixel nuevo por el cual cambiar
 I2: imagen con el pixel cambiado
 - Metas: imageChangePixel, cambiar el pixel de una imagen en una coordenada
 especifica, por uno nuevo
+- Descripción: predicado para sustituir un pixel de la imagen por uno nuevo
 - Predicados:
 imageChangePixel(I,NewPixel,I2).
 reemplazarPix(Pixeles, NewPixel, NewPixels).
@@ -678,6 +776,21 @@ imageChangePixel(I,NewPixel,I2):- % Predicado modificador
     reemplazarPix(Pixeles, NewPixel, NewPixels),
     image(A,L,NewPixels, I2), !.
 % ---------------
+% - Dominio: I: imagen, NewPixel
+% - Goals: esCompatible, para ver que el pixel a cambiar es compatible con el
+% tipo de imagen a operar
+% - Aridad: 2
+% - Tipo de predicado: regla de pertenencia
+esCompatible(I,NewPixel):-
+    % si el pixel es pixbit, la imagen debe ser bitmap
+    pixbit(_,_,_,_,NewPixel), imageIsBitmap(I).
+esCompatible(I,NewPixel):-
+    % si el pixel es pixrgb, la imagen debe ser pixmap
+    pixrgb(_,_,_,_,_,_,NewPixel), imageIsPixmap(I).
+esCompatible(I,NewPixel):-
+    % si el pixel es pixhex, la imagen debe ser hexmap
+    pixhex(_,_,_,_,NewPixel), imageIsHexmap(I).
+% ---------------
 % - Dominio: pixeles originales X pixel nuevo X pixeles modificados
 % - Goals: reemplazarPix, para reemplazar el pixel nuevo en la lista de pixeles
 % - Aridad: 3
@@ -700,21 +813,6 @@ reemplazarPix(Pixeles, NewPix, [Pix1|RestPixsNew]):-
     % del pixel a reemplazar, se colocan los pixeles originales
     pix1(Pixeles,Pix1), restPixs(Pixeles,RestPixs),
     reemplazarPix(RestPixs, NewPix, RestPixsNew).
-% ---------------
-% - Dominio: I: imagen, NewPixel
-% - Goals: esCompatible, para ver que el pixel a cambiar es compatible con el
-% tipo de imagen a operar
-% - Aridad: 2
-% - Tipo de predicado: regla de pertenencia
-esCompatible(I,NewPixel):-
-    % si el pixel es pixbit, la imagen debe ser bitmap
-    pixbit(_,_,_,_,NewPixel), imageIsBitmap(I).
-esCompatible(I,NewPixel):-
-    % si el pixel es pixrgb, la imagen debe ser pixmap
-    pixrgb(_,_,_,_,_,_,NewPixel), imageIsPixmap(I).
-esCompatible(I,NewPixel):-
-    % si el pixel es pixhex, la imagen debe ser hexmap
-    pixhex(_,_,_,_,NewPixel), imageIsHexmap(I).
 % ------------------------------------------------------------------------------ %
 % Requerimiento 15:
 /*
@@ -722,6 +820,7 @@ esCompatible(I,NewPixel):-
 Pixel: pixrgb-d a operar
 Pix_inv: pixrgb-d con sus canales RGB volteados
 - Metas: imageInvertColorRGB, invertir los canales RGB de un pixrgb
+- Descripción: predicado para invertir los canales RGB de un pixel pixrgb
 - Predicados:
 invertColorRGB(Pixel,Pix_inv)
 - Aridad: 2
@@ -745,6 +844,7 @@ imageInvertColorRGB(Pixel,Pix_inv):- % Predicado modificador
 I: imagen a operar
 Str: string representativo de los colores de la imagen
 - Metas: imageToString, para pasar la imagen a una representación string
+- Descripción: predicado para convertir una imagen a representación string
 Predicados:
 imageToString(I,Str)
 a_string(Pixeles,LimY,StrIni,Sout)
@@ -769,6 +869,37 @@ imageToString(I,Str):-
     % salto de linea en el string
     LimY is A - 1,
     a_string(Pixeles,LimY,"",Str), !.
+% ---------------
+% - Dominio: Color (bit entero, hexadecimal string o lista rgb,
+%            D: profundidad, Color
+% - Goals: colorString, para convertir los colores de un pixel a string
+% - Aridad: 3
+% - Tipo de predicado: regla (otras operaciones)
+colorString(Color,_,Color):- % En caso de color hexadecimal de un pixhex-d
+    string(Color).
+colorString(Bit,_,Str):- % En caso del color bit de un pixbit-d
+    integer(Bit),
+    % La conversión a string del bit queda en "Str"
+    number_string(Bit,Str).
+colorString([R,G,B], D, Str):- % En caso de canales de color de un pixrgb-d
+    integer(R), integer(G), integer(B),
+    % Paso a string los 3 canales
+    number_string(R, Rstr),number_string(G, Gstr),
+    number_string(B, Bstr),number_string(D, Dstr),
+    % Uno cada canal con un espacio (para que en la representación
+    % estén distanciados entre si)
+    string_concat(Rstr," ", R_str), string_concat(Gstr, " ", G_str),
+    string_concat(Bstr, " ", B_str),
+    % Uno el valor Red con Green en un string
+    string_concat(R_str,G_str,R_G_Str),
+    % Uno el valor RG con Blue
+    string_concat(R_G_Str, B_str, RGB_Str),
+    % Uno con la profundidad
+    string_concat(RGB_Str, Dstr, RGBD_Str),
+    % Luego uno el RGB string con dos parentesis para encerrar
+    string_concat(RGBD_Str, ")", RGBD_P),
+    % guardo el string final en el de argumento "Str" (salida)
+    string_concat("(", RGBD_P, Str).
 % ---------------
 % - Dominio: Pixeles, LimY: limite en Y de la imagen,
 %           StrIni: String iniciado en "", Str: String resultante
@@ -803,37 +934,6 @@ a_string([[_,_,C,D]|RestPixs],LimY, StrIni,Sout):-
     % Se vuelve a repetir el proceso con el resto de pixeles,
     % actualizando el string inicial
     a_string(RestPixs,LimY, StrSgte,Sout).
-% ---------------
-% - Dominio: Color (bit entero, hexadecimal string o lista rgb,
-%            D: profundidad, Color
-% - Goals: colorString, para convertir los colores de un pixel a string
-% - Aridad: 3
-% - Tipo de predicado: regla (otras operaciones)
-colorString(Color,_,Color):- % En caso de color hexadecimal de un pixhex-d
-    string(Color).
-colorString(Bit,_,Str):- % En caso del color bit de un pixbit-d
-    integer(Bit),
-    % La conversión a string del bit queda en "Str"
-    number_string(Bit,Str).
-colorString([R,G,B], D, Str):- % En caso de canales de color de un pixrgb-d
-    integer(R), integer(G), integer(B),
-    % Paso a string los 3 canales
-    number_string(R, Rstr),number_string(G, Gstr),
-    number_string(B, Bstr),number_string(D, Dstr),
-    % Uno cada canal con un espacio (para que en la representación
-    % estén distanciados entre si)
-    string_concat(Rstr," ", R_str), string_concat(Gstr, " ", G_str),
-    string_concat(Bstr, " ", B_str),
-    % Uno el valor Red con Green en un string
-    string_concat(R_str,G_str,R_G_Str),
-    % Uno el valor RG con Blue
-    string_concat(R_G_Str, B_str, RGB_Str),
-    % Uno con la profundidad
-    string_concat(RGB_Str, Dstr, RGBD_Str),
-    % Luego uno el RGB string con dos parentesis para encerrar
-    string_concat(RGBD_Str, ")", RGBD_P),
-    % guardo el string final en el de argumento "Str" (salida)
-    string_concat("(", RGBD_P, Str).
 % ------------------------------------------------------------------------------ %
 % Requerimiento 17:
 /*
@@ -842,6 +942,8 @@ I: imagen a operar
 LI: lista de imagenes (image list)
 - Metas: imageDepthLayers, para crear una lista de imagenes por profundidad
 respecto a las profundidades de los pixeles de la imagen original
+- Descripción: predicado para crear una lista de imagenes separando
+los pixeles por profundidad y sustituyendo por blancos
 - Predicados:
 imageDepthLayers(I,LI).
 mismaprof(Pixeles,A,L,LI).
@@ -863,26 +965,32 @@ imageDepthLayers(I,LI):-
     getPixeles(I,Pixeles),
     mismaprof(Pixeles,A,L,LI), !.
 % ---------------
-% - Dominio: Pixeles, A: ancho de la imagen, L: largo de la imagen,
-%            ImagenesD: lista de imagenes por profundidad
-% - Goals: construir una lista de imagenes separadas por profundidad
-%          y rellenas de pixeles blancos
-% - Aridad: 4, Tipo de predicado: regla, otras operaciones
-mismaprof([],_,_,[]):- !. % Caso base: se recorrieron todos los pixeles
-mismaprof(Pixeles,A,L,[ImageD|RestImagesD]):-
-    LimX is L - 1, LimY is A - 1,
-    % Primero busco un D específico que será del pixel cabecera
-    pix1(Pixeles,Pix1), getD(Pix1,D),
-    buscarD(Pixeles,D,Pixs_mismoD,Pixs_difD),
-    % a los Pixeles de misma profundidad se le hace un ajuste
-    % rellenandolos con pixeles blancos
-    ajustarPixsD(Pixs_mismoD,0,0,LimX,LimY,Pix1,PixsDAjustados),
-    % Con dichos pixeles ajustados se construye la nueva imagen
-    % que irá en la lista de imagenes de salida
-    image(A,L,PixsDAjustados,ImageD),
-    % Y recursivamente se sigue trabajando con el resto de pixeles
-    % de diferente profundidad
-    mismaprof(Pixs_difD,A,L,RestImagesD).
+% - Dominio: X0,Y0,LimY,Xsgte,Ysgte
+% - Goals: iterar, obtener el sucesor de las coordenas X0 e Y0, sin
+% pasar los límites de la imagen en ancho.
+% - Aridad: 5, Tipo de predicado: regla (modificador de coordenada)
+iterar(X0,Y0,Y0,Xsgte,0):-
+    % - Caso donde el marcador Y0 alcanzo los límites del ancho de la
+    % imagen, el Y se queda en 0 y el X incrementa 1
+    Xsgte is X0 + 1.
+iterar(X0,Y0,_,X0,Ysgte):-
+    % Caso donde el marcador Y0 no ha alcanzado los límites del ancho
+    % de la imagen, el Y incrementa en 1, el X se conserva
+    Ysgte is Y0 + 1.
+% ---------------
+% - Dominio: Pixel, X0: coordenada X, Y0: coordenada Y, PixelBlanco
+% - Goals: whitePixel, predicado para crear un pixel blanco,
+% con un pixel de referencia y unas coordenadas X0 Y0 específicas
+% - Aridad: 4, Tipo de predicado: regla, predicado constructor
+whitePixel(Pixel,X0,Y0,PixelBlanco):- % CASO pixbit-d
+    pixbit(_,_,_,_,Pixel), getD(Pixel,D),
+    pixbit(X0,Y0,1,D,PixelBlanco).
+whitePixel(Pixel,X0,Y0,PixelBlanco):- % CASO pixhex-d
+    pixhex(_,_,_,_,Pixel), getD(Pixel,D),
+    pixhex(X0,Y0,"#FFFFFF",D,PixelBlanco).
+whitePixel(Pixel,X0,Y0,PixelBlanco):- % CASO pixrgb-d
+    pixrgb(_,_,_,_,_,_,Pixel), getD(Pixel,D),
+    pixrgb(X0,Y0,255,255,255,D,PixelBlanco).
 % ---------------
 % - Dominio: Pixeles, D: profundidad buscada, PixsD: pixeles de misma
 %          profundidad, Pixs_DifD: pixeles de diferente profundidad
@@ -935,32 +1043,26 @@ ajustarPixsD(PixelesD,X0,Y0,LimX,LimY,PixRef,[PixBlanco|RestAjustados]):-
     iterar(X0,Y0,LimY,Xsgte,Ysgte),
     ajustarPixsD(PixelesD,Xsgte,Ysgte,LimX,LimY,PixRef,RestAjustados).
 % ---------------
-% - Dominio: X0,Y0,LimY,Xsgte,Ysgte
-% - Goals: iterar, obtener el sucesor de las coordenas X0 e Y0, sin
-% pasar los límites de la imagen en ancho.
-% - Aridad: 5, Tipo de predicado: regla (modificador de coordenada)
-iterar(X0,Y0,Y0,Xsgte,0):-
-    % - Caso donde el marcador Y0 alcanzo los límites del ancho de la
-    % imagen, el Y se queda en 0 y el X incrementa 1
-    Xsgte is X0 + 1.
-iterar(X0,Y0,_,X0,Ysgte):-
-    % Caso donde el marcador Y0 no ha alcanzado los límites del ancho
-    % de la imagen, el Y incrementa en 1, el X se conserva
-    Ysgte is Y0 + 1.
-% ---------------
-% - Dominio: Pixel, X0: coordenada X, Y0: coordenada Y, PixelBlanco
-% - Goals: whitePixel, predicado para crear un pixel blanco,
-% con un pixel de referencia y unas coordenadas X0 Y0 específicas
-% - Aridad: 4, Tipo de predicado: regla, predicado constructor
-whitePixel(Pixel,X0,Y0,PixelBlanco):- % CASO pixbit-d
-    pixbit(_,_,_,_,Pixel), getD(Pixel,D),
-    pixbit(X0,Y0,1,D,PixelBlanco).
-whitePixel(Pixel,X0,Y0,PixelBlanco):- % CASO pixhex-d
-    pixhex(_,_,_,_,Pixel), getD(Pixel,D),
-    pixhex(X0,Y0,"#FFFFFF",D,PixelBlanco).
-whitePixel(Pixel,X0,Y0,PixelBlanco):- % CASO pixrgb-d
-    pixrgb(_,_,_,_,_,_,Pixel), getD(Pixel,D),
-    pixrgb(X0,Y0,255,255,255,D,PixelBlanco).
+% - Dominio: Pixeles, A: ancho de la imagen, L: largo de la imagen,
+%            ImagenesD: lista de imagenes por profundidad
+% - Goals: construir una lista de imagenes separadas por profundidad
+%          y rellenas de pixeles blancos
+% - Aridad: 4, Tipo de predicado: regla, otras operaciones
+mismaprof([],_,_,[]):- !. % Caso base: se recorrieron todos los pixeles
+mismaprof(Pixeles,A,L,[ImageD|RestImagesD]):-
+    LimX is L - 1, LimY is A - 1,
+    % Primero busco un D específico que será del pixel cabecera
+    pix1(Pixeles,Pix1), getD(Pix1,D),
+    buscarD(Pixeles,D,Pixs_mismoD,Pixs_difD),
+    % a los Pixeles de misma profundidad se le hace un ajuste
+    % rellenandolos con pixeles blancos
+    ajustarPixsD(Pixs_mismoD,0,0,LimX,LimY,Pix1,PixsDAjustados),
+    % Con dichos pixeles ajustados se construye la nueva imagen
+    % que irá en la lista de imagenes de salida
+    image(A,L,PixsDAjustados,ImageD),
+    % Y recursivamente se sigue trabajando con el resto de pixeles
+    % de diferente profundidad
+    mismaprof(Pixs_difD,A,L,RestImagesD).
 % ------------------------------------------------------------------------------ %
 % Requerimiento 18:
 /*
@@ -968,6 +1070,8 @@ Dominio:
 I: imagen comprimida
 I2: imagen descomprimida
 - Meta: imageDecompress, descomprimir una imagen (comprimida).
+- Descripción: predicado para traer de vuelta la representación original
+de la imagen, luego de ser comprimida y sintetizada en información
 - Predicados:
 imageDecompress(I,I2).
 recuperarPixs(Pixeles,I,A,PixelesDescomp).
@@ -998,6 +1102,28 @@ imageDecompress(I,I2):-
     % Creo la nueva imagen con los pixeles descomprimidos
     image(A,L,PixelesDescomp,I2), !.
 % ---------------
+% - Dominio: [Pos,D]: Información pixel comprimido (posición, profundidad),
+%            C: color comprimido, A: ancho de la imagen,
+%            Descomp: Pixel descomprimido
+% - Goals: descomprimir un pixel a través de una información reducida:
+%          posición y profundidad
+% - Aridad: 4
+% - Tipo de predicado: regla, otras operaciones
+% Para recuperar X e Y se tiene de patrón que X es la división
+% entera entre la posición y el ancho de la imagen, mientras que Y
+% es el resto.
+descomprime([Pos,D], C, A, Descomp):-
+    string(C), % caso pixhex
+    X is Pos // A, Y is Pos mod A,
+    pixhex(X,Y,C,D,Descomp).
+descomprime([Pos,D], C, A, Descomp):-
+    integer(C), % caso pixbit o pixhex
+    X is Pos // A, Y is Pos mod A,
+    pixbit(X,Y,C,D,Descomp).
+descomprime([Pos,D],[R,G,B],A,Descomp):-
+    X is Pos // A, Y is Pos mod A, % Caso pixrgb
+    pixrgb(X,Y,R,G,B,D,Descomp).
+% ---------------
 % - Dominio: Pixeles formato Comprimido, I: contador de posiciones
 %            (iniciado en 0), A: ancho de la imagen,
 %            PixelesDescomp: pixeles descomprimidos
@@ -1021,37 +1147,8 @@ recuperarPixs([_,C,Comprimidos,[Conserv1|RestConserv]], I, A,[Conserv1|RestRecu]
     % los pixeles recuperados
     Isgte is I + 1,
     recuperarPixs([_,C,Comprimidos,RestConserv], Isgte, A, RestRecu).
-% ---------------
-% - Dominio: [Pos,D]: Información pixel comprimido (posición, profundidad),
-%            C: color comprimido, A: ancho de la imagen,
-%            Descomp: Pixel descomprimido
-% - Goals: descomprimir un pixel a través de una información reducida:
-%          posición y profundidad
-% - Aridad: 4
-% - Tipo de predicado: regla, otras operaciones
-% Para recuperar X e Y se tiene de patrón que X es la división
-% entera entre la posición y el ancho de la imagen, mientras que Y
-% es el resto.
-descomprime([Pos,D], C, A, Descomp):-
-    string(C), % caso pixhex
-    X is Pos // A, Y is Pos mod A,
-    pixhex(X,Y,C,D,Descomp).
-descomprime([Pos,D], C, A, Descomp):-
-    integer(C), % caso pixbit o pixhex
-    X is Pos // A, Y is Pos mod A,
-    pixbit(X,Y,C,D,Descomp).
-descomprime([Pos,D],[R,G,B],A,Descomp):-
-    X is Pos // A, Y is Pos mod A, % Caso pixrgb
-    pixrgb(X,Y,R,G,B,D,Descomp).
 
 % ------------------------------------------------------------------------------ %
-
-
-
-
-
-
-
 
 
 
